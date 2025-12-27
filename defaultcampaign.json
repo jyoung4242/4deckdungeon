@@ -1,0 +1,241 @@
+{
+  "campaign": {
+    "title": "The Lost Forest",
+    "description": "A mysterious forest filled with dangerous creatures, hidden treasures, and ancient secrets.",
+
+    "player_generation": {
+      "backstory_options": [
+        {
+          "id": 1,
+          "name": "Orphaned Wanderer",
+          "description": "Grew up alone, relying on wits and survival skills.",
+          "perk_pool": ["Tracking", "Survival", "Stealth"]
+        },
+        {
+          "id": 2,
+          "name": "Noble Scout",
+          "description": "Trained in etiquette and combat strategy.",
+          "perk_pool": ["Diplomacy", "Archery Mastery", "Tactics"]
+        }
+      ],
+      "class_options": ["Warrior", "Rogue", "Mage", "Ranger"],
+      "race_options": ["Human", "Elf", "Dwarf", "Orc"]
+    },
+
+    "skill_perk_system": {
+      "skills": [
+        { "id": "strength", "name": "Strength", "base_value": 8 },
+        { "id": "agility", "name": "Agility", "base_value": 7 },
+        { "id": "intelligence", "name": "Intelligence", "base_value": 6 },
+        { "id": "perception", "name": "Perception", "base_value": 5 },
+        { "id": "stealth", "name": "Stealth", "base_value": 4 },
+        { "id": "magic", "name": "Magic", "base_value": 3 }
+      ],
+      "perks": [
+        {
+          "id": "tracking",
+          "name": "Tracking",
+          "origin": ["Orphaned Wanderer", "Ranger"],
+          "type": "skill_bonus",
+          "target_skill": "perception",
+          "modifier": 1,
+          "condition": "always",
+          "xp_per_use": 10,
+          "description": "Adds +1 to Perception checks."
+        },
+        {
+          "id": "archery_mastery",
+          "name": "Archery Mastery",
+          "origin": ["Noble Scout", "Ranger"],
+          "type": "skill_bonus",
+          "target_skill": "agility",
+          "modifier": 1,
+          "condition": "always",
+          "xp_per_use": 15,
+          "description": "Adds +1 to Ranged combat checks."
+        }
+      ],
+      "xp_rules": {
+        "per_skill_xp": true,
+        "base_xp_per_success": 50,
+        "difficulty_multiplier": {
+          "mild": 1,
+          "medium": 1.5,
+          "hard": 2
+        }
+      }
+    },
+
+    "items": [
+      {
+        "id": 1,
+        "base_name": "Knife",
+        "type": "Weapon",
+        "tier": "Low",
+        "base_effect": "+0 Melee",
+        "environmental_description": "A dagger partially buried in the mud, its hilt barely visible.",
+        "loot_variations": [
+          {
+            "modifier_name": "Frost",
+            "rarity": "Legendary",
+            "effect": "+1 Melee checks every other use",
+            "conditions": "combat",
+            "duration": "permanent"
+          },
+          {
+            "modifier_name": "Balanced",
+            "rarity": "Common",
+            "effect": "+1 to dodge when equipped",
+            "conditions": "always",
+            "duration": "permanent"
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "base_name": "Healing Potion",
+        "type": "Consumable",
+        "tier": "Low",
+        "base_effect": "Restore 2 Wounds",
+        "environmental_description": "A small vial of red liquid tucked under a bush.",
+        "loot_variations": [
+          {
+            "modifier_name": "Greater",
+            "rarity": "Uncommon",
+            "effect": "Restore 4 Wounds",
+            "conditions": "single use",
+            "duration": "instant"
+          }
+        ]
+      }
+    ],
+
+    "events": [
+      {
+        "id": 1,
+        "suit": "Hearts",
+        "rank": 2,
+        "event_type": "combat",
+        "title": "River Bandit Ambush",
+        "description": "Bandits attack the party near the river crossing.",
+        "difficulty": "mild",
+        "opposition": [
+          {
+            "type": "enemy",
+            "name": "River Bandit",
+            "traits": ["Aggressive", "Fleeing"],
+            "skills": {
+              "melee": 5,
+              "ranged": 4,
+              "magic": 0,
+              "dodge": 3
+            }
+          }
+        ],
+        "contest": {
+          "type": "melee",
+          "skills_involved": ["strength", "agility"],
+          "base_difficulty": 6,
+          "xp_reward": 50
+        },
+        "loot": { "tier": "low", "possible_items": [1] },
+        "trigger_conditions": { "affinity_alignment_bonus": true, "surprise_possible": true }
+      },
+      {
+        "id": 2,
+        "suit": "Diamonds",
+        "rank": "J",
+        "event_type": "social",
+        "title": "Town Elder Request",
+        "description": "Town elder asks for help locating missing travelers.",
+        "difficulty": "medium",
+        "opposition": [
+          {
+            "type": "npc",
+            "name": "Elder Alric",
+            "traits": ["Wise", "Cautious"],
+            "dialogue_options": [
+              {
+                "prompt": "Ask about missing travelers",
+                "check": {
+                  "type": "persuasion",
+                  "difficulty_value": 7,
+                  "xp_reward": 40,
+                  "skills": ["diplomacy", "intelligence"]
+                },
+                "response": "The travelers vanished near the forest edge. Tread carefully."
+              }
+            ]
+          }
+        ],
+        "contest": {
+          "type": "persuasion",
+          "skills_involved": ["intelligence", "diplomacy"],
+          "base_difficulty": 7,
+          "xp_reward": 40
+        },
+        "cutscene": {
+          "id": 1,
+          "description": "Dialogue with Elder Alric with branching choices.",
+          "choices": [
+            { "text": "Ask about travelers", "next_event": null },
+            { "text": "Threaten the elder", "next_event": 3 }
+          ]
+        }
+      }
+    ],
+
+    "areas": [
+      {
+        "id": 1,
+        "name": "River Crossing",
+        "description": "A shallow river surrounded by dense forest, with a rickety bridge in the center.",
+        "dimensions": { "width": 10, "height": 8 },
+        "environment": {
+          "general_description": "A shallow river flows slowly through the forest. Birds chirp and the faint sound of running water masks other noises.",
+          "ambient_sounds": ["birds_chirping", "water_flowing"],
+          "smells": ["fresh_water", "damp_earth"],
+          "visible_features": ["rickety wooden bridge", "large boulders", "dense trees"]
+        },
+        "tiles": [
+          {
+            "x": 0,
+            "y": 4,
+            "trigger": {
+              "type": "area_transition",
+              "target_area_id": 2,
+              "description": "Trail into the forest"
+            }
+          },
+          {
+            "x": 4,
+            "y": 3,
+            "trigger": { "type": "combat", "event_id": 1 },
+            "environment": {
+              "description": "A muddy riverbank with footprints leading into the forest.",
+              "possible_items": [1]
+            }
+          },
+          {
+            "x": 6,
+            "y": 5,
+            "trigger": { "type": "trap", "event_id": 3 },
+            "environment": {
+              "description": "A patch of oddly loose dirt, suspicious for a trap.",
+              "possible_items": []
+            }
+          },
+          {
+            "x": 2,
+            "y": 1,
+            "trigger": { "type": "cutscene", "event_id": 2 },
+            "environment": {
+              "description": "A small glade where the town elder might appear.",
+              "possible_items": []
+            }
+          }
+        ]
+      }
+    ]
+  }
+}
