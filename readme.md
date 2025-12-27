@@ -32,16 +32,3 @@ system is designed to be independent yet easily integrated into a larger campaig
 - Scene-based exploration
 
 It is designed to be modular, so each system can be used independently or together as part of a full campaign runner.
-
----
-
-## Getting Started
-
-To get started with 4 Deck Dungeon:
-
-1. Clone this repository:
-
-```bash
-git clone https://github.com/yourusername/4-deck-dungeon.git
-cd 4-deck-dungeon
-```
