@@ -11,9 +11,6 @@ contests, while remaining platform-agnostic and UI-independent.
 - [Overview](#overview)
 - [Folder Structure](#folder-structure)
 - [Core Systems](#core-systems)
-- [Getting Started](#getting-started)
-- [Contributing](#contributing)
-- [License](#license)
 
 ---
 
