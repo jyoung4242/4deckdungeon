@@ -21,6 +21,7 @@ system is designed to be independent yet easily integrated into a larger campaig
   - [Items](./Items/readme.md)
   - [Scenes / Levels](./Scenes/readme.md)
   - [Perks and Progression](./Perks/readme.md)
+  - [Schema Reference](./Schema/readme.md)
 
 ---
 
