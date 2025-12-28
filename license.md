@@ -60,7 +60,10 @@ law provisions.
 
 For licensing inquiries, please contact:
 
-Justin Young justin_dean_young@yahoo.com  
+Justin Young
+
+justin_dean_young@yahoo.com
+
 502.265.8471
 
 ---
