@@ -16,6 +16,7 @@ system is designed to be independent yet easily integrated into a larger campaig
   - [Contest System](./Contests/readme.md)
   - [Items](./Items/readme.md)
   - [Scenes / Levels](./Scenes/readme.md)
+  - [Perks and Progression](./Perks/readme.md)
 - [Contributing](#contributing)
 - [License](#license)
 

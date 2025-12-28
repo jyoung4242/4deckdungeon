@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Terminal Game</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Courier New", monospace;
+        background-color: #0c0c0c;
+        color: #00ff00;
+        height: 100vh;
+        overflow: hidden;
+      }
+
+      #terminal {
+        width: 100%;
+        height: 100%;
+        padding: 20px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+      }
+
+      #output {
+        flex: 1;
+        margin-bottom: 10px;
+        overflow-y: auto;
+      }
+
+      .line {
+        margin-bottom: 5px;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+      }
+
+      .prompt {
+        color: #00ff00;
+      }
+
+      .user-input {
+        color: #00ffff;
+      }
+
+      .error {
+        color: #ff0000;
+      }
+
+      .success {
+        color: #00ff00;
+      }
+
+      .info {
+        color: #ffff00;
+      }
+
+      #input-line {
+        display: flex;
+        align-items: center;
+      }
+
+      #prompt-symbol {
+        color: #00ff00;
+        margin-right: 5px;
+      }
+
+      #input {
+        flex: 1;
+        background: transparent;
+        border: none;
+        color: #00ffff;
+        font-family: "Courier New", monospace;
+        font-size: 16px;
+        outline: none;
+      }
+
+      #cursor {
+        display: inline-block;
+        width: 8px;
+        height: 18px;
+        background-color: #00ff00;
+        animation: blink 1s infinite;
+        margin-left: 2px;
+      }
+
+      @keyframes blink {
+        0%,
+        49% {
+          opacity: 1;
+        }
+        50%,
+        100% {
+          opacity: 0;
+        }
+      }
+
+      /* Scrollbar styling */
+      #output::-webkit-scrollbar {
+        width: 8px;
+      }
+
+      #output::-webkit-scrollbar-track {
+        background: #1a1a1a;
+      }
+
+      #output::-webkit-scrollbar-thumb {
+        background: #00ff00;
+      }
+
+      #output::-webkit-scrollbar-thumb:hover {
+        background: #00cc00;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="terminal">
+      <div id="output"></div>
+      <div id="input-line">
+        <span id="prompt-symbol">&gt;</span>
+        <input type="text" id="input" autocomplete="off" autofocus />
+        <span id="cursor"></span>
+      </div>
+    </div>
+
+    <script type="module">
+      class Terminal {
+        constructor() {
+          this.output = document.getElementById("output");
+          this.input = document.getElementById("input");
+          this.cursor = document.getElementById("cursor");
+
+          this.input.addEventListener("keydown", this.handleInput.bind(this));
+          this.input.addEventListener("input", this.updateCursor.bind(this));
+
+          // Focus management
+          document.addEventListener("click", () => this.input.focus());
+
+          this.init();
+        }
+
+        init() {
+          this.writeLine("=================================", "success");
+          this.writeLine("  Four Deck Dungeon v1.0", "success");
+          this.writeLine("=================================", "success");
+          this.writeLine("");
+          this.writeLine('Type "help" for available commands', "info");
+          this.writeLine("");
+        }
+
+        handleInput(e) {
+          if (e.key === "Enter") {
+            const cmd = this.input.value.trim();
+
+            if (cmd) {
+              this.writeLine(`> ${cmd}`, "user-input");
+              this.processCommand(cmd);
+            }
+
+            this.input.value = "";
+            this.updateCursor();
+          }
+        }
+
+        updateCursor() {
+          // Hide cursor when typing, show when empty
+          this.cursor.style.display = this.input.value ? "none" : "inline-block";
+        }
+
+        processCommand(cmd) {
+          const lower = cmd.toLowerCase();
+
+          // Your game logic goes here
+          switch (lower) {
+            case "help":
+              this.writeLine("Available commands:", "info");
+              this.writeLine("  help     - Show this help message");
+              this.writeLine("  clear    - Clear the screen");
+              this.writeLine("  start    - Start the game");
+              this.writeLine("  look     - Look around");
+              this.writeLine("");
+              break;
+
+            case "clear":
+              this.clear();
+              break;
+
+            case "start":
+              this.writeLine("Game started!", "success");
+              this.writeLine("You find yourself in a dark room...", "info");
+              this.writeLine("");
+              break;
+
+            case "look":
+              this.writeLine("You see nothing but darkness.", "info");
+              this.writeLine("");
+              break;
+
+            default:
+              this.writeLine(`Unknown command: ${cmd}`, "error");
+              this.writeLine('Type "help" for available commands', "info");
+              this.writeLine("");
+          }
+
+          this.scrollToBottom();
+        }
+
+        writeLine(text, className = "") {
+          const line = document.createElement("div");
+          line.className = `line ${className}`;
+          line.textContent = text;
+          this.output.appendChild(line);
+        }
+
+        write(text, className = "") {
+          const span = document.createElement("span");
+          span.className = className;
+          span.textContent = text;
+
+          let lastLine = this.output.lastElementChild;
+          if (!lastLine || lastLine.classList.contains("line")) {
+            lastLine = document.createElement("div");
+            lastLine.className = "line";
+            this.output.appendChild(lastLine);
+          }
+          lastLine.appendChild(span);
+        }
+
+        clear() {
+          this.output.innerHTML = "";
+        }
+
+        scrollToBottom() {
+          this.output.scrollTop = this.output.scrollHeight;
+        }
+      }
+
+      // Initialize terminal
+      const terminal = new Terminal();
+
+      // Expose terminal globally for game control
+      window.terminal = terminal;
+
+      // Example: How to control the terminal from your game logic
+      //terminal.writeLine("Your custom text here", "info");
+      //   terminal.writeLine("Success message", "success");
+      //   terminal.writeLine("Error message", "error");
+    </script>
+  </body>
+</html>

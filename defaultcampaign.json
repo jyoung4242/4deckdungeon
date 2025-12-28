@@ -19,9 +19,34 @@
         }
       ],
       "class_options": ["Warrior", "Rogue", "Mage", "Ranger"],
-      "race_options": ["Human", "Elf", "Dwarf", "Orc"]
+      "race_options": ["Human", "Elf", "Dwarf", "Orc"],
+      "purpose_options": [
+        {
+          "id": 1,
+          "name": "Revenge",
+          "description": "Driven to avenge a personal wrong.",
+          "associated_perks": ["Intimidation", "Tracking"]
+        },
+        {
+          "id": 2,
+          "name": "Exploration",
+          "description": "Seeks adventure and discovery.",
+          "associated_perks": ["Survival", "Perception"]
+        },
+        {
+          "id": 3,
+          "name": "Honor",
+          "description": "Motivated by duty and reputation.",
+          "associated_perks": ["Tactics", "Diplomacy"]
+        },
+        {
+          "id": 4,
+          "name": "Survival",
+          "description": "Focused on staying alive at any cost.",
+          "associated_perks": ["Stealth", "Endurance"]
+        }
+      ]
     },
-
     "skill_perk_system": {
       "skills": [
         { "id": "strength", "name": "Strength", "base_value": 8 },
