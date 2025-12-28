@@ -15,6 +15,8 @@ system is designed to be independent yet easily integrated into a larger campaig
   - [Encounters](./Encounters/readme.md)
     - [Combat Encounter](./Combat/readme.md)
     - [Trap Encounter](./Traps/readme.md)
+    - [NPC Encounter](./NPC/readme.md)
+    - [Exploration Encounter](./Exploration/readme.md)
   - [Contest System](./Contests/readme.md)
   - [Items](./Items/readme.md)
   - [Scenes / Levels](./Scenes/readme.md)
