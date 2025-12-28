@@ -9,8 +9,7 @@ system is designed to be independent yet easily integrated into a larger campaig
 ## Table of Contents
 
 - [Overview](#overview)
-- [Getting Started](#getting-started)
-- [Systems](#systems)
+- Systems
   - [Player Generation](./PlayerGeneration/readme.md)
   - [Encounters](./Encounters/readme.md)
     - [Combat Encounter](./Combat/readme.md)
