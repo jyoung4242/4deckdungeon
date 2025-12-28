@@ -80,14 +80,3 @@ git clone https://github.com/yourusername/4-deck-dungeon.git
 import { RulesEngine } from "./Engine/RulesEngine";
 RulesEngine.loadCampaign("path/to/campaign.json");
 ```
-
----
-
-## Contributing
-
-Contributions are welcome! Please follow these guidelines:
-
-- Add new systems as independent static classes.
-- Keep the engine UI-agnostic.
-- Document all new features in the `Docs` folder.
-- Submit pull requests with clear descriptions and tests where applicable.
