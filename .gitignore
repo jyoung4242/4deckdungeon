@@ -1,0 +1,93 @@
+# Ignore node_modules
+/node_modules/
+
+# Ignore log files
+*.log
+
+# Ignore db files
+*.db
+
+# Ignore os files
+.DS_Store
+ehthumbs.db
+Thumbs.db
+
+# Ignore user files
+*.suo
+*.ntuser.dat
+*.swp
+*.sdf
+*.ldb
+*.opendb
+*.db-journal
+*.tmp
+*.userprefs
+*.vi
+*.class
+*.psd
+*.pdf
+*.db3
+
+# Ignore system files
+.AppData
+Application Data
+Desktop.ini
+ehthumbs.db
+MSOCache
+My Documents
+NTUSER.DAT
+ntuser.dat
+ntuser.ini
+Saved Games
+SearchFolders.ini
+Spotify
+System Volume Information
+Thumbs.db
+Videos
+WindowsSearchData
+Windows.edb
+
+# Ignore Visual Studio files
+*.iml
+*.ipch
+*.iobj
+*.lib
+*.obj
+*.pch
+*.pdb
+*.sdf
+*.suo
+*.tlb
+*.tlog
+*.user
+*.vspscc
+*.vssscc
+BuildWebCache
+obj
+Release
+Debug
+*.Cache
+ClientBin
+Package
+ PublishWeb
+ pubxml
+ bin
+ packages
+ .publishproj
+ .vs
+ .suo
+ .user
+ .pdb
+ .mdb
+ .obj
+ .ncb
+ .sln
+ .suo
+ .tlb
+ .tlh
+ .user
+ .vspscc
+ .vssscc
+ App_Data
+ Content
+ node_modules
