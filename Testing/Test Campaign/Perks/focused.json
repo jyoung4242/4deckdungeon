@@ -1,0 +1,11 @@
+{
+  "id": "perk.focused",
+  "description": "Ignore the first penalty in a mental contest.",
+  "modifiers": [
+    {
+      "type": "penalty_ignore",
+      "scope": "mental",
+      "count": 1
+    }
+  ]
+}

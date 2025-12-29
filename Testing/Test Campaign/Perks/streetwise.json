@@ -1,0 +1,12 @@
+{
+  "id": "perk.streetwise",
+  "description": "Gain advantage on social contests in urban environments.",
+  "modifiers": [
+    {
+      "type": "contest_bonus",
+      "contest": "social",
+      "condition": "urban",
+      "value": 1
+    }
+  ]
+}

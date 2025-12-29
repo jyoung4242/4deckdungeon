@@ -1,0 +1,15 @@
+{
+  "id": "item_lockpicks",
+  "type": "tool",
+  "name": "Lockpicks",
+  "description": "A set of delicate tools used to bypass mechanical locks.",
+  "tags": ["utility", "stealth", "illegal"],
+  "contest_roles": ["trap", "lock", "stealth"],
+  "base_effects": {
+    "enables_lock_contests": true
+  },
+  "durability": {
+    "max": 5,
+    "current": 5
+  }
+}

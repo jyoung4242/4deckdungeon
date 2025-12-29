@@ -200,3 +200,110 @@ const fullCampaign = await combineJson('./campaign', 'campaign.json');
 // Synchronous version:
 const fullCampaign = combineJsonSync('./campaign', 'campaign.json');
 */
+
+// CLI helper functions
+const printUsage = () => {
+  console.log(`
+Usage: node json-combiner.js [options] <entry-file>
+
+Options:
+  -d, --dir <directory>     Base directory (default: current directory)
+  -o, --output <file>       Output file (default: stdout)
+  -p, --pretty              Pretty print JSON output
+  -h, --help                Show this help message
+
+Examples:
+  node json-combiner.js campaign.json
+  node json-combiner.js -d ./campaign campaign.json
+  node json-combiner.js -o output.json -p campaign.json
+  node json-combiner.js --dir ./campaign --output combined.json --pretty campaign.json
+  `);
+};
+
+const parseArgs = (args: string[]) => {
+  const options = {
+    baseDir: process.cwd(),
+    output: null as string | null,
+    pretty: false,
+    entryFile: null as string | null,
+  };
+
+  for (let i = 0; i < args.length; i++) {
+    const arg = args[i];
+
+    switch (arg) {
+      case "-h":
+      case "--help":
+        printUsage();
+        process.exit(0);
+        break;
+
+      case "-d":
+      case "--dir":
+        options.baseDir = args[++i];
+        if (!options.baseDir) {
+          console.error("Error: --dir requires a directory path");
+          process.exit(1);
+        }
+        break;
+
+      case "-o":
+      case "--output":
+        options.output = args[++i];
+        if (!options.output) {
+          console.error("Error: --output requires a file path");
+          process.exit(1);
+        }
+        break;
+
+      case "-p":
+      case "--pretty":
+        options.pretty = true;
+        break;
+
+      default:
+        if (arg.startsWith("-")) {
+          console.error(`Error: Unknown option ${arg}`);
+          printUsage();
+          process.exit(1);
+        }
+        options.entryFile = arg;
+        break;
+    }
+  }
+
+  return options;
+};
+
+// CLI tool
+if (require.main === module) {
+  const args = process.argv.slice(2);
+
+  try {
+    const options = parseArgs(args);
+
+    if (!options.entryFile) {
+      console.error("Error: No entry file specified");
+      printUsage();
+      process.exit(1);
+    }
+
+    // Combine the JSON
+    const combiner = new JsonCombiner(options.baseDir);
+    const result = combiner.combineSync(options.entryFile);
+
+    // Format output
+    const output = options.pretty ? JSON.stringify(result, null, 2) : JSON.stringify(result);
+
+    // Write output
+    if (options.output) {
+      fs.writeFileSync(options.output, output, "utf-8");
+      console.log(`Combined JSON written to: ${options.output}`);
+    } else {
+      console.log(output);
+    }
+  } catch (error: any) {
+    console.error("Error:", error.message);
+    process.exit(1);
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "id": "enemy.wolf",
+  "name": "Wolf",
+  "type": "beast",
+  "suitAffinity": "spades",
+  "level": 1,
+  "tags": ["pack", "fast", "aggressive"],
+  "stats": {
+    "strength": 2,
+    "agility": 3,
+    "perception": 3,
+    "constitution": 2
+  },
+  "defaultBehavior": "pack_hunter",
+  "lootTable": "loot.beast.small",
+  "description": "A lean predator that hunts in coordinated packs."
+}

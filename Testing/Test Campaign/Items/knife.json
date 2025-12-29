@@ -1,0 +1,16 @@
+{
+  "id": "item_knife",
+  "type": "weapon",
+  "name": "Knife",
+  "description": "A short, balanced blade suited for close combat or utility work.",
+  "tags": ["melee", "light", "blade", "concealable"],
+  "contest_roles": ["combat", "stealth"],
+  "base_effects": {
+    "damage_profile": "light",
+    "allows_stealth_attack": true
+  },
+  "durability": {
+    "max": 10,
+    "current": 10
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "id": "item_shield",
+  "type": "armor",
+  "name": "Shield",
+  "description": "A sturdy shield designed to deflect blows and protect the bearer.",
+  "tags": ["defensive", "blocking", "martial"],
+  "contest_roles": ["combat"],
+  "base_effects": {
+    "block_capable": true,
+    "reduces_damage": true
+  },
+  "durability": {
+    "max": 20,
+    "current": 20
+  }
+}

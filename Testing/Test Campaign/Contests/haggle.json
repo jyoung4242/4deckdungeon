@@ -1,0 +1,50 @@
+{
+  "id": "contest.shopkeeper.haggle",
+  "type": "social",
+  "description": "Negotiating prices and access with the shopkeeper.",
+
+  "player": {
+    "allowedActions": ["haggle", "persuade", "intimidate", "inquire"],
+    "primarySkills": ["intelligence", "perception"],
+    "secondarySkills": ["charisma"],
+    "perkTags": ["streetwise", "versatile"]
+  },
+
+  "opposition": {
+    "entityId": "npc.shopkeeper.elric",
+    "behavior": "scripted",
+    "responseMap": {
+      "haggle": "counter_offer",
+      "persuade": "consider",
+      "intimidate": "resist",
+      "inquire": "deflect"
+    },
+    "difficultyBias": "standard"
+  },
+
+  "resolution": {
+    "primaryDraw": {
+      "uses": "engagement_deck",
+      "rankMeaning": "relative leverage",
+      "suitMeaning": "tone of exchange"
+    },
+    "secondaryDraw": {
+      "enabled": true,
+      "purpose": "npc_disposition_shift"
+    }
+  },
+
+  "outcomes": {
+    "success": {
+      "effects": ["discount_applied", "rare_items_unlocked"],
+      "unlocks": ["engagement.shop.secret_stock"]
+    },
+    "partial": {
+      "effects": ["minor_discount", "neutral_disposition"]
+    },
+    "failure": {
+      "effects": ["price_increase", "shopkeeper_suspicious"],
+      "triggers": ["npc.memory.mark_player"]
+    }
+  }
+}

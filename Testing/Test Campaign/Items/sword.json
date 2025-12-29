@@ -1,0 +1,16 @@
+{
+  "id": "item_sword",
+  "type": "weapon",
+  "name": "Sword",
+  "description": "A reliable one-handed blade used by soldiers and adventurers alike.",
+  "tags": ["melee", "blade", "martial"],
+  "contest_roles": ["combat"],
+  "base_effects": {
+    "damage_profile": "medium",
+    "parry_capable": true
+  },
+  "durability": {
+    "max": 15,
+    "current": 15
+  }
+}

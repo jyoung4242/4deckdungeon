@@ -1,0 +1,17 @@
+{
+  "id": "enemy.bear",
+  "name": "Bear",
+  "type": "beast",
+  "suitAffinity": "spades",
+  "level": 3,
+  "tags": ["solitary", "brutal", "territorial"],
+  "stats": {
+    "strength": 5,
+    "agility": 2,
+    "perception": 2,
+    "constitution": 5
+  },
+  "defaultBehavior": "overwhelm",
+  "lootTable": "loot.beast.large",
+  "description": "A massive and dangerous creature capable of crushing blows."
+}

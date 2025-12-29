@@ -1,0 +1,10 @@
+{
+  "id": "perk.fierce",
+  "description": "On critical success, deal additional effect.",
+  "modifiers": [
+    {
+      "type": "critical_effect",
+      "effect": "extra_damage"
+    }
+  ]
+}

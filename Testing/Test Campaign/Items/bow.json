@@ -1,0 +1,16 @@
+{
+  "id": "item_bow",
+  "type": "weapon",
+  "name": "Bow",
+  "description": "A ranged weapon capable of striking enemies from a distance.",
+  "tags": ["ranged", "martial", "requires_ammo"],
+  "contest_roles": ["combat"],
+  "base_effects": {
+    "damage_profile": "medium",
+    "requires_ammunition": true
+  },
+  "durability": {
+    "max": 12,
+    "current": 12
+  }
+}

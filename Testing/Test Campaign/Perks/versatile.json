@@ -1,0 +1,11 @@
+{
+  "id": "perk.versatile",
+  "description": "Once per encounter, redraw a failed contest card.",
+  "modifiers": [
+    {
+      "type": "reroll",
+      "uses": 1,
+      "scope": "encounter"
+    }
+  ]
+}

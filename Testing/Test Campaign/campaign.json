@@ -1,0 +1,8 @@
+{
+  "name": "Forest Quest",
+  "scenes": [{ "$ref": "./scenes/forest_entrance.json" }, { "$ref": "./scenes/cave.json" }],
+  "enemies": {
+    "wolf": { "$ref": "./enemies/wolf.json" },
+    "bear": { "$ref": "./enemies/bear.json" }
+  }
+}

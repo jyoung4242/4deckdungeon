@@ -1,0 +1,11 @@
+{
+  "id": "perk.combat_trained",
+  "description": "Gain advantage on melee combat contests.",
+  "modifiers": [
+    {
+      "type": "contest_bonus",
+      "contest": "melee",
+      "value": 1
+    }
+  ]
+}

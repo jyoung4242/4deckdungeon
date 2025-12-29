@@ -1,0 +1,11 @@
+{
+  "id": "perk.strong",
+  "description": "Gain advantage on strength-based contests.",
+  "modifiers": [
+    {
+      "type": "skill_bonus",
+      "skill": "strength",
+      "value": 1
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "id": "scene_crossroads_outpost",
+  "type": "rumor",
+  "title": "Whispers on the Road",
+  "text": "Caravans have gone missing east of the crossroads. No bodies. No survivors.",
+  "tags": ["bandits", "region:east_road"],
+  "reveals": ["scene_bandit_camp"],
+  "followUpHooks": ["npc_bandit_leader"]
+}

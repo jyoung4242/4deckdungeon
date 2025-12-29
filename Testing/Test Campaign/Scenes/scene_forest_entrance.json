@@ -1,0 +1,29 @@
+{
+  "id": "scene_forest_entrance",
+  "type": "scene",
+  "name": "Forest Entrance",
+  "dimensions": { "width": 12, "height": 8 },
+
+  "description": {
+    "default": "Tall trees loom ahead, their branches blocking out much of the sky.",
+    "investigate": ["Fresh tracks are visible near the treeline.", "You hear distant movement deeper in the forest."]
+  },
+
+  "enemyFamilies": {
+    "spades": ["wolf", "bear"],
+    "hearts": ["bandit"]
+  },
+
+  "triggers": [
+    {
+      "id": "forest_entry_encounter",
+      "type": "engagement",
+      "trigger": "enter_tile",
+      "metadata": {
+        "allowedEngagements": ["combat", "exploration"]
+      }
+    }
+  ],
+
+  "exits": [{ "to": "scene_cave", "type": "path" }]
+}

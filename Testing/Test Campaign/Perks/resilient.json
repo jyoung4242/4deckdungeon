@@ -1,0 +1,10 @@
+{
+  "id": "perk.resilient",
+  "description": "Reduce incoming harm from physical sources.",
+  "modifiers": [
+    {
+      "type": "damage_reduction",
+      "value": 1
+    }
+  ]
+}

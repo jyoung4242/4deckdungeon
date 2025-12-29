@@ -1,0 +1,42 @@
+{
+  "backstories": [
+    {
+      "id": "orphan",
+      "name": "Orphan",
+      "description": "Grew up without parents, learns to survive on their own.",
+      "perkPool": ["streetwise", "resilient"]
+    }
+  ],
+  "motivations": [
+    {
+      "id": "revenge",
+      "name": "Revenge",
+      "description": "Driven to seek justice or vengeance.",
+      "perkPool": ["fierce", "focused"]
+    }
+  ],
+  "classes": [
+    {
+      "id": "warrior",
+      "name": "Warrior",
+      "description": "Focuses on combat and strength-based abilities.",
+      "perkPool": ["strong", "combat_trained"]
+    }
+  ],
+  "races": [
+    {
+      "id": "human",
+      "name": "Human",
+      "description": "Balanced abilities with adaptable traits.",
+      "perkPool": ["versatile"]
+    }
+  ],
+  "skills": {
+    "strength": 8,
+    "agility": 6,
+    "intelligence": 5,
+    "perception": 7,
+    "constitution": 9
+  },
+  "perks": ["streetwise", "resilient", "strong"]
+}

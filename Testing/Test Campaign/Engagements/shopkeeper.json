@@ -1,0 +1,44 @@
+{
+  "id": "engagement.forest.shopkeeper",
+  "type": "npc_interaction",
+
+  "trigger": {
+    "type": "tile",
+    "tileId": "forest_entrance.market_tile"
+  },
+
+  "participants": {
+    "npc": ["npc.shopkeeper.forest"]
+  },
+
+  "interaction": {
+    "mode": "scripted_optional_contest",
+
+    "options": [
+      {
+        "id": "browse_goods",
+        "description": "Browse the shopkeeper's wares",
+        "result": {
+          "action": "open_shop",
+          "npcService": "shop"
+        }
+      },
+      {
+        "id": "haggle",
+        "description": "Attempt to haggle for better prices",
+        "contest": {
+          "source": "npc",
+          "contestId": "haggle"
+        }
+      },
+      {
+        "id": "ask_rumors",
+        "description": "Ask about local rumors",
+        "result": {
+          "action": "unlock_lore",
+          "loreTopic": "lore.forest.cave"
+        }
+      }
+    ]
+  }
+}

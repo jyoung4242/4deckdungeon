@@ -1,0 +1,30 @@
+{
+  "id": "scene_cave",
+  "type": "scene",
+  "name": "Shadowed Cave",
+  "dimensions": { "width": 6, "height": 6 },
+
+  "description": {
+    "default": "A damp cave descends into darkness.",
+    "investigate": ["Scratches line the stone walls.", "The air smells of wet fur and decay."]
+  },
+
+  "enemyFamilies": {
+    "spades": ["bear"],
+    "clubs": ["wyrmling"]
+  },
+
+  "triggers": [
+    {
+      "id": "cave_depths",
+      "type": "engagement",
+      "trigger": "step_tile",
+      "metadata": {
+        "allowedEngagements": ["combat", "trap", "discovery"],
+        "dangerous": true
+      }
+    }
+  ],
+
+  "exits": [{ "to": "scene_forest_entrance", "type": "path" }]
+}
