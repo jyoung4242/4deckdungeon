@@ -1,0 +1,593 @@
+{
+  "name": "Forest Quest",
+  "backstories": [
+    {
+      "id": "orphan",
+      "name": "Orphan",
+      "description": "Grew up without parents, learns to survive on their own.",
+      "perkPool": [
+        "streetwise",
+        "resilient"
+      ]
+    }
+  ],
+  "motivations": [
+    {
+      "id": "revenge",
+      "name": "Revenge",
+      "description": "Driven to seek justice or vengeance.",
+      "perkPool": [
+        "fierce",
+        "focused"
+      ]
+    }
+  ],
+  "drive": [
+    {
+      "id": "survival",
+      "name": "Survival",
+      "description": "Focused on staying alive against overwhelming odds.",
+      "perkPool": [
+        "resilient"
+      ]
+    },
+    {
+      "id": "ambition",
+      "name": "Ambition",
+      "description": "Seeks power, status, or mastery through relentless effort.",
+      "perkPool": [
+        "focused"
+      ]
+    },
+    {
+      "id": "protection",
+      "name": "Protection",
+      "description": "Driven to defend others, places, or ideals from harm.",
+      "perkPool": [
+        "combat_trained",
+        "resilient"
+      ]
+    },
+    {
+      "id": "freedom",
+      "name": "Freedom",
+      "description": "Refuses to be bound by laws, tyrants, or expectations.",
+      "perkPool": [
+        "streetwise",
+        "versatile"
+      ]
+    }
+  ],
+  "classes": [
+    {
+      "id": "warrior",
+      "name": "Warrior",
+      "description": "Focuses on combat and strength-based abilities.",
+      "perkPool": [
+        "strong",
+        "combat_trained"
+      ]
+    }
+  ],
+  "races": [
+    {
+      "id": "human",
+      "name": "Human",
+      "description": "Balanced abilities with adaptable traits.",
+      "perkPool": [
+        "versatile"
+      ]
+    }
+  ],
+  "Contests": [
+    {
+      "id": "contest.shopkeeper.haggle",
+      "type": "social",
+      "description": "Negotiating prices and access with the shopkeeper.",
+      "player": {
+        "allowedActions": [
+          "haggle",
+          "persuade",
+          "intimidate",
+          "inquire"
+        ],
+        "primarySkills": [
+          "intelligence",
+          "perception"
+        ],
+        "secondarySkills": [
+          "charisma"
+        ],
+        "perkTags": [
+          "streetwise",
+          "versatile"
+        ]
+      },
+      "opposition": {
+        "entityId": "npc.shopkeeper.elric",
+        "behavior": "scripted",
+        "responseMap": {
+          "haggle": "counter_offer",
+          "persuade": "consider",
+          "intimidate": "resist",
+          "inquire": "deflect"
+        },
+        "difficultyBias": "standard"
+      },
+      "resolution": {
+        "primaryDraw": {
+          "uses": "engagement_deck",
+          "rankMeaning": "relative leverage",
+          "suitMeaning": "tone of exchange"
+        },
+        "secondaryDraw": {
+          "enabled": true,
+          "purpose": "npc_disposition_shift"
+        }
+      },
+      "outcomes": {
+        "success": {
+          "effects": [
+            "discount_applied",
+            "rare_items_unlocked"
+          ],
+          "unlocks": [
+            "engagement.shop.secret_stock"
+          ]
+        },
+        "partial": {
+          "effects": [
+            "minor_discount",
+            "neutral_disposition"
+          ]
+        },
+        "failure": {
+          "effects": [
+            "price_increase",
+            "shopkeeper_suspicious"
+          ],
+          "triggers": [
+            "npc.memory.mark_player"
+          ]
+        }
+      }
+    }
+  ],
+  "Enemies": [
+    {
+      "id": "enemy.bear",
+      "name": "Bear",
+      "type": "beast",
+      "suitAffinity": "spades",
+      "level": 3,
+      "tags": [
+        "solitary",
+        "brutal",
+        "territorial"
+      ],
+      "stats": {
+        "strength": 5,
+        "agility": 2,
+        "perception": 2,
+        "constitution": 5
+      },
+      "defaultBehavior": "overwhelm",
+      "lootTable": "loot.beast.large",
+      "description": "A massive and dangerous creature capable of crushing blows."
+    },
+    {
+      "id": "enemy.wolf",
+      "name": "Wolf",
+      "type": "beast",
+      "suitAffinity": "spades",
+      "level": 1,
+      "tags": [
+        "pack",
+        "fast",
+        "aggressive"
+      ],
+      "stats": {
+        "strength": 2,
+        "agility": 3,
+        "perception": 3,
+        "constitution": 2
+      },
+      "defaultBehavior": "pack_hunter",
+      "lootTable": "loot.beast.small",
+      "description": "A lean predator that hunts in coordinated packs."
+    }
+  ],
+  "Engagements": [
+    {
+      "id": "engagement.forest.shopkeeper",
+      "type": "npc_interaction",
+      "trigger": {
+        "type": "tile",
+        "tileId": "forest_entrance.market_tile"
+      },
+      "participants": {
+        "npc": [
+          "npc.shopkeeper.forest"
+        ]
+      },
+      "interaction": {
+        "mode": "scripted_optional_contest",
+        "options": [
+          {
+            "id": "browse_goods",
+            "description": "Browse the shopkeeper's wares",
+            "result": {
+              "action": "open_shop",
+              "npcService": "shop"
+            }
+          },
+          {
+            "id": "haggle",
+            "description": "Attempt to haggle for better prices",
+            "contest": {
+              "source": "npc",
+              "contestId": "haggle"
+            }
+          },
+          {
+            "id": "ask_rumors",
+            "description": "Ask about local rumors",
+            "result": {
+              "action": "unlock_lore",
+              "loreTopic": "lore.forest.cave"
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "Items": [
+    {
+      "id": "item_bow",
+      "type": "weapon",
+      "name": "Bow",
+      "description": "A ranged weapon capable of striking enemies from a distance.",
+      "tags": [
+        "ranged",
+        "martial",
+        "requires_ammo"
+      ],
+      "contest_roles": [
+        "combat"
+      ],
+      "base_effects": {
+        "damage_profile": "medium",
+        "requires_ammunition": true
+      },
+      "durability": {
+        "max": 12,
+        "current": 12
+      }
+    },
+    {
+      "id": "item_knife",
+      "type": "weapon",
+      "name": "Knife",
+      "description": "A short, balanced blade suited for close combat or utility work.",
+      "tags": [
+        "melee",
+        "light",
+        "blade",
+        "concealable"
+      ],
+      "contest_roles": [
+        "combat",
+        "stealth"
+      ],
+      "base_effects": {
+        "damage_profile": "light",
+        "allows_stealth_attack": true
+      },
+      "durability": {
+        "max": 10,
+        "current": 10
+      }
+    },
+    {
+      "id": "item_lockpicks",
+      "type": "tool",
+      "name": "Lockpicks",
+      "description": "A set of delicate tools used to bypass mechanical locks.",
+      "tags": [
+        "utility",
+        "stealth",
+        "illegal"
+      ],
+      "contest_roles": [
+        "trap",
+        "lock",
+        "stealth"
+      ],
+      "base_effects": {
+        "enables_lock_contests": true
+      },
+      "durability": {
+        "max": 5,
+        "current": 5
+      }
+    },
+    {
+      "id": "item_shield",
+      "type": "armor",
+      "name": "Shield",
+      "description": "A sturdy shield designed to deflect blows and protect the bearer.",
+      "tags": [
+        "defensive",
+        "blocking",
+        "martial"
+      ],
+      "contest_roles": [
+        "combat"
+      ],
+      "base_effects": {
+        "block_capable": true,
+        "reduces_damage": true
+      },
+      "durability": {
+        "max": 20,
+        "current": 20
+      }
+    },
+    {
+      "id": "item_sword",
+      "type": "weapon",
+      "name": "Sword",
+      "description": "A reliable one-handed blade used by soldiers and adventurers alike.",
+      "tags": [
+        "melee",
+        "blade",
+        "martial"
+      ],
+      "contest_roles": [
+        "combat"
+      ],
+      "base_effects": {
+        "damage_profile": "medium",
+        "parry_capable": true
+      },
+      "durability": {
+        "max": 15,
+        "current": 15
+      }
+    }
+  ],
+  "Lore": [
+    {
+      "id": "scene_crossroads_outpost",
+      "type": "rumor",
+      "title": "Whispers on the Road",
+      "text": "Caravans have gone missing east of the crossroads. No bodies. No survivors.",
+      "tags": [
+        "bandits",
+        "region:east_road"
+      ],
+      "reveals": [
+        "scene_bandit_camp"
+      ],
+      "followUpHooks": [
+        "npc_bandit_leader"
+      ]
+    }
+  ],
+  "NPCs": [
+    {
+      "id": "scene_cave",
+      "type": "scene",
+      "name": "Shadowed Cave",
+      "dimensions": {
+        "width": 6,
+        "height": 6
+      },
+      "description": {
+        "default": "A damp cave descends into darkness.",
+        "investigate": [
+          "Scratches line the stone walls.",
+          "The air smells of wet fur and decay."
+        ]
+      },
+      "enemyFamilies": {
+        "spades": [
+          "bear"
+        ],
+        "clubs": [
+          "wyrmling"
+        ]
+      },
+      "triggers": [
+        {
+          "id": "cave_depths",
+          "type": "engagement",
+          "trigger": "step_tile",
+          "metadata": {
+            "allowedEngagements": [
+              "combat",
+              "trap",
+              "discovery"
+            ],
+            "dangerous": true
+          }
+        }
+      ],
+      "exits": [
+        {
+          "to": "scene_forest_entrance",
+          "type": "path"
+        }
+      ]
+    }
+  ],
+  "Perks": [
+    {
+      "id": "perk.combat_trained",
+      "description": "Gain advantage on melee combat contests.",
+      "modifiers": [
+        {
+          "type": "contest_bonus",
+          "contest": "melee",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "id": "perk.fierce",
+      "description": "On critical success, deal additional effect.",
+      "modifiers": [
+        {
+          "type": "critical_effect",
+          "effect": "extra_damage"
+        }
+      ]
+    },
+    {
+      "id": "perk.focused",
+      "description": "Ignore the first penalty in a mental contest.",
+      "modifiers": [
+        {
+          "type": "penalty_ignore",
+          "scope": "mental",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "id": "perk.resilient",
+      "description": "Reduce incoming harm from physical sources.",
+      "modifiers": [
+        {
+          "type": "damage_reduction",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "id": "perk.streetwise",
+      "description": "Gain advantage on social contests in urban environments.",
+      "modifiers": [
+        {
+          "type": "contest_bonus",
+          "contest": "social",
+          "condition": "urban",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "id": "perk.strong",
+      "description": "Gain advantage on strength-based contests.",
+      "modifiers": [
+        {
+          "type": "skill_bonus",
+          "skill": "strength",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "id": "perk.versatile",
+      "description": "Once per encounter, redraw a failed contest card.",
+      "modifiers": [
+        {
+          "type": "reroll",
+          "uses": 1,
+          "scope": "encounter"
+        }
+      ]
+    }
+  ],
+  "Scenes": [
+    {
+      "id": "scene_cave",
+      "type": "scene",
+      "name": "Shadowed Cave",
+      "dimensions": {
+        "width": 6,
+        "height": 6
+      },
+      "description": {
+        "default": "A damp cave descends into darkness.",
+        "investigate": [
+          "Scratches line the stone walls.",
+          "The air smells of wet fur and decay."
+        ]
+      },
+      "enemyFamilies": {
+        "spades": [
+          "bear"
+        ],
+        "clubs": [
+          "wyrmling"
+        ]
+      },
+      "triggers": [
+        {
+          "id": "cave_depths",
+          "type": "engagement",
+          "trigger": "step_tile",
+          "metadata": {
+            "allowedEngagements": [
+              "combat",
+              "trap",
+              "discovery"
+            ],
+            "dangerous": true
+          }
+        }
+      ],
+      "exits": [
+        {
+          "to": "scene_forest_entrance",
+          "type": "path"
+        }
+      ]
+    },
+    {
+      "id": "scene_forest_entrance",
+      "type": "scene",
+      "name": "Forest Entrance",
+      "dimensions": {
+        "width": 12,
+        "height": 8
+      },
+      "description": {
+        "default": "Tall trees loom ahead, their branches blocking out much of the sky.",
+        "investigate": [
+          "Fresh tracks are visible near the treeline.",
+          "You hear distant movement deeper in the forest."
+        ]
+      },
+      "enemyFamilies": {
+        "spades": [
+          "wolf",
+          "bear"
+        ],
+        "hearts": [
+          "bandit"
+        ]
+      },
+      "triggers": [
+        {
+          "id": "forest_entry_encounter",
+          "type": "engagement",
+          "trigger": "enter_tile",
+          "metadata": {
+            "allowedEngagements": [
+              "combat",
+              "exploration"
+            ]
+          }
+        }
+      ],
+      "exits": [
+        {
+          "to": "scene_cave",
+          "type": "path"
+        }
+      ]
+    }
+  ]
+}

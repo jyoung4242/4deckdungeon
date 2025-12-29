@@ -58,51 +58,244 @@ var __rest = (this && this.__rest) || function (s, e) {
     return t;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.combineJsonSync = exports.combineJson = exports.JsonCombiner = void 0;
+exports.combineCampaignAsync = exports.combineCampaign = exports.CampaignCombiner = void 0;
 var fs = require("fs");
 var path = require("path");
 /**
- * Combines modular, nested JSON objects into one resolved object.
- * Supports $ref syntax for referencing other JSON files.
- *
- * Example reference formats:
- * - "$ref": "./enemies/wolf.json"
- * - "$ref": "../items/sword_01.json"
+ * Auto-discovers and combines all JSON files in a campaign directory structure.
+ * Automatically organizes files by their folder names.
  */
-var JsonCombiner = /** @class */ (function () {
-    function JsonCombiner(baseDir) {
+var CampaignCombiner = /** @class */ (function () {
+    function CampaignCombiner(baseDir) {
         this.baseDir = path.resolve(baseDir);
         this.cache = new Map();
     }
     /**
-     * Load and combine a JSON file with all its references
+     * Combine all JSON files in the campaign directory
+     * @param rootFiles Optional array of root-level files to include (e.g., ['campaign.json', 'playergen.json'])
      */
-    JsonCombiner.prototype.combine = function (entryFile) {
+    CampaignCombiner.prototype.combineSync = function (rootFiles) {
+        var _this = this;
+        var result = {};
+        // First, load root-level JSON files in the base directory
+        if (rootFiles && rootFiles.length > 0) {
+            rootFiles.forEach(function (file) {
+                var filePath = path.join(_this.baseDir, file);
+                if (fs.existsSync(filePath)) {
+                    var content = _this.loadJsonFile(filePath);
+                    Object.assign(result, content);
+                }
+            });
+        }
+        else {
+            // Load all JSON files in the root directory
+            var rootJsonFiles = fs
+                .readdirSync(this.baseDir)
+                .filter(function (file) { return file.endsWith(".json") && fs.statSync(path.join(_this.baseDir, file)).isFile(); });
+            rootJsonFiles.forEach(function (file) {
+                var filePath = path.join(_this.baseDir, file);
+                var content = _this.loadJsonFile(filePath);
+                Object.assign(result, content);
+            });
+        }
+        // Then, discover and load all subdirectories
+        var subdirs = fs.readdirSync(this.baseDir).filter(function (item) {
+            var itemPath = path.join(_this.baseDir, item);
+            return fs.statSync(itemPath).isDirectory();
+        });
+        subdirs.forEach(function (dir) {
+            var categoryName = dir; // Use folder name as the category key
+            var categoryPath = path.join(_this.baseDir, dir);
+            var items = _this.loadCategorySync(categoryPath);
+            if (items.length > 0) {
+                result[categoryName] = items;
+            }
+        });
+        return result;
+    };
+    /**
+     * Async version of combine
+     */
+    CampaignCombiner.prototype.combine = function (rootFiles) {
         return __awaiter(this, void 0, void 0, function () {
-            var entryPath;
-            return __generator(this, function (_a) {
-                entryPath = path.resolve(this.baseDir, entryFile);
-                return [2 /*return*/, this.resolveFile(entryPath)];
+            var result, _i, rootFiles_1, file, filePath, content, rootJsonFiles, _a, rootJsonFiles_1, file, filePath, content, items, subdirs, _b, items_1, item, itemPath, stat, _c, subdirs_1, dir, categoryName, categoryPath, categoryItems;
+            var _this = this;
+            return __generator(this, function (_d) {
+                switch (_d.label) {
+                    case 0:
+                        result = {};
+                        if (!(rootFiles && rootFiles.length > 0)) return [3 /*break*/, 5];
+                        _i = 0, rootFiles_1 = rootFiles;
+                        _d.label = 1;
+                    case 1:
+                        if (!(_i < rootFiles_1.length)) return [3 /*break*/, 4];
+                        file = rootFiles_1[_i];
+                        filePath = path.join(this.baseDir, file);
+                        if (!fs.existsSync(filePath)) return [3 /*break*/, 3];
+                        return [4 /*yield*/, this.loadJsonFileAsync(filePath)];
+                    case 2:
+                        content = _d.sent();
+                        Object.assign(result, content);
+                        _d.label = 3;
+                    case 3:
+                        _i++;
+                        return [3 /*break*/, 1];
+                    case 4: return [3 /*break*/, 10];
+                    case 5: return [4 /*yield*/, fs.promises.readdir(this.baseDir)];
+                    case 6:
+                        rootJsonFiles = (_d.sent()).filter(function (file) { return __awaiter(_this, void 0, void 0, function () {
+                            var filePath, stat;
+                            return __generator(this, function (_a) {
+                                switch (_a.label) {
+                                    case 0:
+                                        filePath = path.join(this.baseDir, file);
+                                        return [4 /*yield*/, fs.promises.stat(filePath)];
+                                    case 1:
+                                        stat = _a.sent();
+                                        return [2 /*return*/, file.endsWith(".json") && stat.isFile()];
+                                }
+                            });
+                        }); });
+                        _a = 0, rootJsonFiles_1 = rootJsonFiles;
+                        _d.label = 7;
+                    case 7:
+                        if (!(_a < rootJsonFiles_1.length)) return [3 /*break*/, 10];
+                        file = rootJsonFiles_1[_a];
+                        filePath = path.join(this.baseDir, file);
+                        return [4 /*yield*/, this.loadJsonFileAsync(filePath)];
+                    case 8:
+                        content = _d.sent();
+                        Object.assign(result, content);
+                        _d.label = 9;
+                    case 9:
+                        _a++;
+                        return [3 /*break*/, 7];
+                    case 10: return [4 /*yield*/, fs.promises.readdir(this.baseDir)];
+                    case 11:
+                        items = _d.sent();
+                        subdirs = [];
+                        _b = 0, items_1 = items;
+                        _d.label = 12;
+                    case 12:
+                        if (!(_b < items_1.length)) return [3 /*break*/, 15];
+                        item = items_1[_b];
+                        itemPath = path.join(this.baseDir, item);
+                        return [4 /*yield*/, fs.promises.stat(itemPath)];
+                    case 13:
+                        stat = _d.sent();
+                        if (stat.isDirectory()) {
+                            subdirs.push(item);
+                        }
+                        _d.label = 14;
+                    case 14:
+                        _b++;
+                        return [3 /*break*/, 12];
+                    case 15:
+                        _c = 0, subdirs_1 = subdirs;
+                        _d.label = 16;
+                    case 16:
+                        if (!(_c < subdirs_1.length)) return [3 /*break*/, 19];
+                        dir = subdirs_1[_c];
+                        categoryName = dir;
+                        categoryPath = path.join(this.baseDir, dir);
+                        return [4 /*yield*/, this.loadCategoryAsync(categoryPath)];
+                    case 17:
+                        categoryItems = _d.sent();
+                        if (categoryItems.length > 0) {
+                            result[categoryName] = categoryItems;
+                        }
+                        _d.label = 18;
+                    case 18:
+                        _c++;
+                        return [3 /*break*/, 16];
+                    case 19: return [2 /*return*/, result];
+                }
             });
         });
     };
     /**
-     * Synchronous version of combine
+     * Recursively load all JSON files in a category directory (sync)
      */
-    JsonCombiner.prototype.combineSync = function (entryFile) {
-        var entryPath = path.resolve(this.baseDir, entryFile);
-        return this.resolveFileSync(entryPath);
+    CampaignCombiner.prototype.loadCategorySync = function (categoryPath) {
+        var items = [];
+        var entries = fs.readdirSync(categoryPath, { withFileTypes: true });
+        for (var _i = 0, entries_1 = entries; _i < entries_1.length; _i++) {
+            var entry = entries_1[_i];
+            var fullPath = path.join(categoryPath, entry.name);
+            if (entry.isFile() && entry.name.endsWith(".json")) {
+                var content = this.loadJsonFile(fullPath);
+                items.push(content);
+            }
+            else if (entry.isDirectory()) {
+                // Recursively load subdirectories
+                var subItems = this.loadCategorySync(fullPath);
+                items.push.apply(items, subItems);
+            }
+        }
+        return items;
     };
     /**
-     * Recursively resolve a JSON file and all its references (async)
+     * Recursively load all JSON files in a category directory (async)
      */
-    JsonCombiner.prototype.resolveFile = function (filePath) {
+    CampaignCombiner.prototype.loadCategoryAsync = function (categoryPath) {
+        return __awaiter(this, void 0, void 0, function () {
+            var items, entries, _i, entries_2, entry, fullPath, content, subItems;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        items = [];
+                        return [4 /*yield*/, fs.promises.readdir(categoryPath, { withFileTypes: true })];
+                    case 1:
+                        entries = _a.sent();
+                        _i = 0, entries_2 = entries;
+                        _a.label = 2;
+                    case 2:
+                        if (!(_i < entries_2.length)) return [3 /*break*/, 7];
+                        entry = entries_2[_i];
+                        fullPath = path.join(categoryPath, entry.name);
+                        if (!(entry.isFile() && entry.name.endsWith(".json"))) return [3 /*break*/, 4];
+                        return [4 /*yield*/, this.loadJsonFileAsync(fullPath)];
+                    case 3:
+                        content = _a.sent();
+                        items.push(content);
+                        return [3 /*break*/, 6];
+                    case 4:
+                        if (!entry.isDirectory()) return [3 /*break*/, 6];
+                        return [4 /*yield*/, this.loadCategoryAsync(fullPath)];
+                    case 5:
+                        subItems = _a.sent();
+                        items.push.apply(items, subItems);
+                        _a.label = 6;
+                    case 6:
+                        _i++;
+                        return [3 /*break*/, 2];
+                    case 7: return [2 /*return*/, items];
+                }
+            });
+        });
+    };
+    /**
+     * Load and parse a JSON file with $ref resolution (sync)
+     */
+    CampaignCombiner.prototype.loadJsonFile = function (filePath) {
+        if (this.cache.has(filePath)) {
+            return this.cache.get(filePath);
+        }
+        var content = fs.readFileSync(filePath, "utf-8");
+        var json = JSON.parse(content);
+        var resolved = this.resolveRefsSync(json, path.dirname(filePath));
+        this.cache.set(filePath, resolved);
+        return resolved;
+    };
+    /**
+     * Load and parse a JSON file with $ref resolution (async)
+     */
+    CampaignCombiner.prototype.loadJsonFileAsync = function (filePath) {
         return __awaiter(this, void 0, void 0, function () {
             var content, json, resolved;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        // Check cache
                         if (this.cache.has(filePath)) {
                             return [2 /*return*/, this.cache.get(filePath)];
                         }
@@ -110,10 +303,9 @@ var JsonCombiner = /** @class */ (function () {
                     case 1:
                         content = _a.sent();
                         json = JSON.parse(content);
-                        return [4 /*yield*/, this.resolveObject(json, path.dirname(filePath))];
+                        return [4 /*yield*/, this.resolveRefsAsync(json, path.dirname(filePath))];
                     case 2:
                         resolved = _a.sent();
-                        // Cache the result
                         this.cache.set(filePath, resolved);
                         return [2 /*return*/, resolved];
                 }
@@ -121,28 +313,35 @@ var JsonCombiner = /** @class */ (function () {
         });
     };
     /**
-     * Recursively resolve a JSON file and all its references (sync)
+     * Resolve $ref properties in an object (sync)
      */
-    JsonCombiner.prototype.resolveFileSync = function (filePath) {
-        // Check cache
-        if (this.cache.has(filePath)) {
-            return this.cache.get(filePath);
+    CampaignCombiner.prototype.resolveRefsSync = function (obj, currentDir) {
+        var _this = this;
+        if (obj === null || typeof obj !== "object") {
+            return obj;
         }
-        // Read and parse file
-        var content = fs.readFileSync(filePath, "utf-8");
-        var json = JSON.parse(content);
-        // Resolve references in the object
-        var resolved = this.resolveObjectSync(json, path.dirname(filePath));
-        // Cache the result
-        this.cache.set(filePath, resolved);
+        if (Array.isArray(obj)) {
+            return obj.map(function (item) { return _this.resolveRefsSync(item, currentDir); });
+        }
+        if ("$ref" in obj && typeof obj.$ref === "string") {
+            var refPath = path.resolve(currentDir, obj.$ref);
+            var resolved_1 = this.loadJsonFile(refPath);
+            var $ref = obj.$ref, rest = __rest(obj, ["$ref"]);
+            return __assign(__assign({}, resolved_1), rest);
+        }
+        var resolved = {};
+        for (var _i = 0, _a = Object.entries(obj); _i < _a.length; _i++) {
+            var _b = _a[_i], key = _b[0], value = _b[1];
+            resolved[key] = this.resolveRefsSync(value, currentDir);
+        }
         return resolved;
     };
     /**
-     * Recursively resolve all $ref properties in an object (async)
+     * Resolve $ref properties in an object (async)
      */
-    JsonCombiner.prototype.resolveObject = function (obj, currentDir) {
+    CampaignCombiner.prototype.resolveRefsAsync = function (obj, currentDir) {
         return __awaiter(this, void 0, void 0, function () {
-            var refPath, resolved_1, $ref, rest, resolved, _i, _a, _b, key, value, _c, _d;
+            var refPath, resolved_2, $ref, rest, resolved, _i, _a, _b, key, value, _c, _d;
             var _this = this;
             return __generator(this, function (_e) {
                 switch (_e.label) {
@@ -150,17 +349,16 @@ var JsonCombiner = /** @class */ (function () {
                         if (obj === null || typeof obj !== "object") {
                             return [2 /*return*/, obj];
                         }
-                        // Handle arrays
                         if (Array.isArray(obj)) {
-                            return [2 /*return*/, Promise.all(obj.map(function (item) { return _this.resolveObject(item, currentDir); }))];
+                            return [2 /*return*/, Promise.all(obj.map(function (item) { return _this.resolveRefsAsync(item, currentDir); }))];
                         }
                         if (!("$ref" in obj && typeof obj.$ref === "string")) return [3 /*break*/, 2];
                         refPath = path.resolve(currentDir, obj.$ref);
-                        return [4 /*yield*/, this.resolveFile(refPath)];
+                        return [4 /*yield*/, this.loadJsonFileAsync(refPath)];
                     case 1:
-                        resolved_1 = _e.sent();
+                        resolved_2 = _e.sent();
                         $ref = obj.$ref, rest = __rest(obj, ["$ref"]);
-                        return [2 /*return*/, __assign(__assign({}, resolved_1), rest)];
+                        return [2 /*return*/, __assign(__assign({}, resolved_2), rest)];
                     case 2:
                         resolved = {};
                         _i = 0, _a = Object.entries(obj);
@@ -170,7 +368,7 @@ var JsonCombiner = /** @class */ (function () {
                         _b = _a[_i], key = _b[0], value = _b[1];
                         _c = resolved;
                         _d = key;
-                        return [4 /*yield*/, this.resolveObject(value, currentDir)];
+                        return [4 /*yield*/, this.resolveRefsAsync(value, currentDir)];
                     case 4:
                         _c[_d] = _e.sent();
                         _e.label = 5;
@@ -183,98 +381,45 @@ var JsonCombiner = /** @class */ (function () {
         });
     };
     /**
-     * Recursively resolve all $ref properties in an object (sync)
-     */
-    JsonCombiner.prototype.resolveObjectSync = function (obj, currentDir) {
-        var _this = this;
-        if (obj === null || typeof obj !== "object") {
-            return obj;
-        }
-        // Handle arrays
-        if (Array.isArray(obj)) {
-            return obj.map(function (item) { return _this.resolveObjectSync(item, currentDir); });
-        }
-        // Handle $ref property
-        if ("$ref" in obj && typeof obj.$ref === "string") {
-            var refPath = path.resolve(currentDir, obj.$ref);
-            var resolved_2 = this.resolveFileSync(refPath);
-            // Merge any additional properties from the referencing object
-            var $ref = obj.$ref, rest = __rest(obj, ["$ref"]);
-            return __assign(__assign({}, resolved_2), rest);
-        }
-        // Recursively resolve all properties
-        var resolved = {};
-        for (var _i = 0, _a = Object.entries(obj); _i < _a.length; _i++) {
-            var _b = _a[_i], key = _b[0], value = _b[1];
-            resolved[key] = this.resolveObjectSync(value, currentDir);
-        }
-        return resolved;
-    };
-    /**
      * Clear the internal cache
      */
-    JsonCombiner.prototype.clearCache = function () {
+    CampaignCombiner.prototype.clearCache = function () {
         this.cache.clear();
     };
-    return JsonCombiner;
+    return CampaignCombiner;
 }());
-exports.JsonCombiner = JsonCombiner;
+exports.CampaignCombiner = CampaignCombiner;
 /**
- * Convenience function for quick one-off combinations
+ * Convenience function for quick combinations
  */
-function combineJson(baseDir, entryFile) {
+function combineCampaign(campaignDir, rootFiles) {
+    var combiner = new CampaignCombiner(campaignDir);
+    return combiner.combineSync(rootFiles);
+}
+exports.combineCampaign = combineCampaign;
+/**
+ * Async convenience function
+ */
+function combineCampaignAsync(campaignDir, rootFiles) {
     return __awaiter(this, void 0, void 0, function () {
         var combiner;
         return __generator(this, function (_a) {
-            combiner = new JsonCombiner(baseDir);
-            return [2 /*return*/, combiner.combine(entryFile)];
+            combiner = new CampaignCombiner(campaignDir);
+            return [2 /*return*/, combiner.combine(rootFiles)];
         });
     });
 }
-exports.combineJson = combineJson;
-/**
- * Synchronous convenience function
- */
-function combineJsonSync(baseDir, entryFile) {
-    var combiner = new JsonCombiner(baseDir);
-    return combiner.combineSync(entryFile);
-}
-exports.combineJsonSync = combineJsonSync;
-// Example usage:
-/*
-// campaign.json
-{
-  "name": "Forest Quest",
-  "scenes": [
-    { "$ref": "./scenes/forest_entrance.json" },
-    { "$ref": "./scenes/cave.json" }
-  ],
-  "enemies": {
-    "wolf": { "$ref": "./enemies/wolf.json" },
-    "bear": { "$ref": "./enemies/bear.json" }
-  }
-}
-
-// Usage:
-const combiner = new JsonCombiner('./campaign');
-const fullCampaign = await combiner.combine('campaign.json');
-
-// Or use the convenience function:
-const fullCampaign = await combineJson('./campaign', 'campaign.json');
-
-// Synchronous version:
-const fullCampaign = combineJsonSync('./campaign', 'campaign.json');
-*/
+exports.combineCampaignAsync = combineCampaignAsync;
 // CLI helper functions
 var printUsage = function () {
-    console.log("\nUsage: node json-combiner.js [options] <entry-file>\n\nOptions:\n  -d, --dir <directory>     Base directory (default: current directory)\n  -o, --output <file>       Output file (default: stdout)\n  -p, --pretty              Pretty print JSON output\n  -h, --help                Show this help message\n\nExamples:\n  node json-combiner.js campaign.json\n  node json-combiner.js -d ./campaign campaign.json\n  node json-combiner.js -o output.json -p campaign.json\n  node json-combiner.js --dir ./campaign --output combined.json --pretty campaign.json\n  ");
+    console.log("\nUsage: node json-combiner.js [options] <campaign-directory>\n\nAuto-discovers and combines all JSON files in a campaign directory structure.\nRoot-level JSON files are merged into the base object.\nSubdirectories become arrays of their contained JSON files.\n\nOptions:\n  -r, --root <files>        Comma-separated list of root files to include (default: all .json files)\n  -o, --output <file>       Output file (default: stdout)\n  -p, --pretty              Pretty print JSON output\n  -h, --help                Show this help message\n\nExamples:\n  node json-combiner.js ./campaign\n  node json-combiner.js -r campaign.json,playergen.json ./campaign\n  node json-combiner.js -o combined.json -p ./campaign\n  ");
 };
 var parseArgs = function (args) {
     var options = {
-        baseDir: process.cwd(),
+        campaignDir: null,
+        rootFiles: null,
         output: null,
         pretty: false,
-        entryFile: null,
     };
     for (var i = 0; i < args.length; i++) {
         var arg = args[i];
@@ -284,13 +429,14 @@ var parseArgs = function (args) {
                 printUsage();
                 process.exit(0);
                 break;
-            case "-d":
-            case "--dir":
-                options.baseDir = args[++i];
-                if (!options.baseDir) {
-                    console.error("Error: --dir requires a directory path");
+            case "-r":
+            case "--root":
+                var rootArg = args[++i];
+                if (!rootArg) {
+                    console.error("Error: --root requires a comma-separated list of files");
                     process.exit(1);
                 }
+                options.rootFiles = rootArg.split(",").map(function (f) { return f.trim(); });
                 break;
             case "-o":
             case "--output":
@@ -310,7 +456,7 @@ var parseArgs = function (args) {
                     printUsage();
                     process.exit(1);
                 }
-                options.entryFile = arg;
+                options.campaignDir = arg;
                 break;
         }
     }
@@ -321,20 +467,20 @@ if (require.main === module) {
     var args = process.argv.slice(2);
     try {
         var options = parseArgs(args);
-        if (!options.entryFile) {
-            console.error("Error: No entry file specified");
+        if (!options.campaignDir) {
+            console.error("Error: No campaign directory specified");
             printUsage();
             process.exit(1);
         }
-        // Combine the JSON
-        var combiner = new JsonCombiner(options.baseDir);
-        var result = combiner.combineSync(options.entryFile);
+        // Combine the campaign
+        var combiner = new CampaignCombiner(options.campaignDir);
+        var result = combiner.combineSync(options.rootFiles || undefined);
         // Format output
         var output = options.pretty ? JSON.stringify(result, null, 2) : JSON.stringify(result);
         // Write output
         if (options.output) {
             fs.writeFileSync(options.output, output, "utf-8");
-            console.log("Combined JSON written to: ".concat(options.output));
+            console.log("Combined campaign written to: ".concat(options.output));
         }
         else {
             console.log(output);
@@ -342,6 +488,48 @@ if (require.main === module) {
     }
     catch (error) {
         console.error("Error:", error.message);
+        if (error.stack) {
+            console.error(error.stack);
+        }
         process.exit(1);
     }
 }
+// Example usage:
+/*
+Campaign structure:
+campaign/
+├─ campaign.json
+├─ playergen.json
+├─ Scenes/
+│  ├─ forest_entrance.json
+│  └─ cave.json
+├─ Enemies/
+│  ├─ wolf.json
+│  └─ bear.json
+└─ Items/
+   └─ sword.json
+
+Usage:
+const combiner = new CampaignCombiner('./campaign');
+const fullCampaign = combiner.combineSync(['campaign.json', 'playergen.json']);
+
+// Or auto-discover all root files:
+const fullCampaign = combiner.combineSync();
+
+Result:
+{
+  // Contents of campaign.json and playergen.json merged here
+  "name": "Forest Quest",
+  "Scenes": [
+    { ...forest_entrance.json contents },
+    { ...cave.json contents }
+  ],
+  "Enemies": [
+    { ...wolf.json contents },
+    { ...bear.json contents }
+  ],
+  "Items": [
+    { ...sword.json contents }
+  ]
+}
+*/

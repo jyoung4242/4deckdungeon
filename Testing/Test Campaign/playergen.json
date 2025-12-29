@@ -15,6 +15,32 @@
       "perkPool": ["fierce", "focused"]
     }
   ],
+  "drive": [
+    {
+      "id": "survival",
+      "name": "Survival",
+      "description": "Focused on staying alive against overwhelming odds.",
+      "perkPool": ["resilient"]
+    },
+    {
+      "id": "ambition",
+      "name": "Ambition",
+      "description": "Seeks power, status, or mastery through relentless effort.",
+      "perkPool": ["focused"]
+    },
+    {
+      "id": "protection",
+      "name": "Protection",
+      "description": "Driven to defend others, places, or ideals from harm.",
+      "perkPool": ["combat_trained", "resilient"]
+    },
+    {
+      "id": "freedom",
+      "name": "Freedom",
+      "description": "Refuses to be bound by laws, tyrants, or expectations.",
+      "perkPool": ["streetwise", "versatile"]
+    }
+  ],
   "classes": [
     {
       "id": "warrior",
@@ -30,13 +56,5 @@
       "description": "Balanced abilities with adaptable traits.",
       "perkPool": ["versatile"]
     }
-  ],
-  "skills": {
-    "strength": 8,
-    "agility": 6,
-    "intelligence": 5,
-    "perception": 7,
-    "constitution": 9
-  },
-  "perks": ["streetwise", "resilient", "strong"]
+  ]
 }

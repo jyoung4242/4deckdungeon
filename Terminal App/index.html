@@ -70,6 +70,13 @@
         margin-right: 5px;
       }
 
+      #status {
+        display: none;
+        color: #ff9900;
+        margin-bottom: 5px;
+        font-weight: bold;
+      }
+
       #input {
         flex: 1;
         background: transparent;
@@ -116,37 +123,84 @@
       #output::-webkit-scrollbar-thumb:hover {
         background: #00cc00;
       }
+
+      #terminal.drag-over {
+        background-color: #1a3a1a;
+        border: 2px dashed #00ff00;
+      }
     </style>
   </head>
   <body>
     <div id="terminal">
       <div id="output"></div>
       <div id="input-line">
-        <span id="prompt-symbol">&gt;</span>
-        <input type="text" id="input" autocomplete="off" autofocus />
-        <span id="cursor"></span>
+        <div style="width: 100%">
+          <div id="status"></div>
+          <div style="display: flex; align-items: center">
+            <span id="prompt-symbol">&gt;</span>
+            <input type="text" id="input" autocomplete="off" autofocus />
+            <span id="cursor"></span>
+          </div>
+        </div>
       </div>
     </div>
 
     <script type="module">
+      const VERSION = "0.0.9";
+      import { z } from "https://esm.sh/zod@4";
+      import { FourDeckDungeonEngine, ENGINE_STATE } from "../Engine/dist/engine.js";
+      let tempCreatedPlayer = null;
       class Terminal {
         constructor() {
           this.output = document.getElementById("output");
           this.input = document.getElementById("input");
           this.cursor = document.getElementById("cursor");
+          this.promptSymbol = document.getElementById("prompt-symbol");
+          this.status = document.getElementById("status");
+          this.terminal = document.getElementById("terminal");
 
           this.input.addEventListener("keydown", this.handleInput.bind(this));
           this.input.addEventListener("input", this.updateCursor.bind(this));
 
+          // Drag and drop handlers
+          this.terminal.addEventListener("dragover", this.handleDragOver.bind(this));
+          this.terminal.addEventListener("dragleave", this.handleDragLeave.bind(this));
+          this.terminal.addEventListener("drop", this.handleDrop.bind(this));
+
           // Focus management
           document.addEventListener("click", () => this.input.focus());
 
+          // State for multi-step commands
+          this.awaitingInput = null; // null, 'path', etc.
+          this.campaignLoaded = false; // Track if campaign is loaded to prevent re-loading
+
+          // #region ZOD SCHEMA
+          // Basic Zod schema for campaign validation. Adjust to your full schema.
+
+          this.campaignSchema = z.object({
+            name: z.string(),
+            backstories: z.array(z.any()),
+            motivations: z.array(z.any()),
+            drive: z.array(z.any()),
+            classes: z.array(z.any()),
+            races: z.array(z.any()),
+            Contests: z.array(z.any()),
+            Enemies: z.array(z.any()),
+            Engagements: z.array(z.any()),
+            Items: z.array(z.any()),
+            Lore: z.array(z.any()),
+            NPCs: z.array(z.any()),
+            Perks: z.array(z.any()),
+            Scenes: z.array(z.any()),
+          });
+
+          // #endregion ZOD SCHEMA
           this.init();
         }
 
         init() {
           this.writeLine("=================================", "success");
-          this.writeLine("  Four Deck Dungeon v1.0", "success");
+          this.writeLine(`  Four Deck Dungeon v${VERSION} `, "success");
           this.writeLine("=================================", "success");
           this.writeLine("");
           this.writeLine('Type "help" for available commands', "info");
@@ -159,17 +213,247 @@
 
             if (cmd) {
               this.writeLine(`> ${cmd}`, "user-input");
-              this.processCommand(cmd);
+
+              // Check if we're awaiting input for a specific command
+              if (this.awaitingInput === "path") {
+                this.processLoadPath(cmd);
+                this.awaitingInput = null;
+                this.updateUIState();
+              } else if (this.awaitingInput === "playerName") {
+                this.processPlayerNameInput(cmd);
+                this.awaitingInput = null;
+                this.updateUIState();
+              } else if (this.awaitingInput === "removeIndex") {
+                this.processRemoveIndexInput(cmd);
+                this.awaitingInput = null;
+                this.updateUIState();
+              } else {
+                this.processCommand(cmd);
+              }
             }
 
             this.input.value = "";
             this.updateCursor();
+          } else if (e.key === "Escape") {
+            // Cancel awaiting input state
+            if (this.awaitingInput) {
+              this.writeLine("Cancelled.", "error");
+              this.writeLine("");
+              this.awaitingInput = null;
+              this.updateUIState();
+              this.input.value = "";
+              this.updateCursor();
+            }
           }
         }
 
         updateCursor() {
           // Hide cursor when typing, show when empty
           this.cursor.style.display = this.input.value ? "none" : "inline-block";
+        }
+
+        updateUIState() {
+          if (this.awaitingInput === "path") {
+            this.status.textContent = "[Drag & drop a JSON file or press Escape to cancel]";
+            this.status.style.display = "block";
+            this.promptSymbol.textContent = "path >";
+            this.promptSymbol.style.color = "#ff9900";
+          } else if (this.awaitingInput === "playerName") {
+            this.status.textContent = "[Enter player name or press Escape to cancel]";
+            this.status.style.display = "block";
+            this.promptSymbol.textContent = "name >";
+            this.promptSymbol.style.color = "#ff9900";
+          } else if (this.awaitingInput === "removeIndex") {
+            this.status.textContent = "[Enter player index to remove or press Escape to cancel]";
+            this.status.style.display = "block";
+            this.promptSymbol.textContent = "index >";
+            this.promptSymbol.style.color = "#ff9900";
+          } else {
+            this.status.style.display = "none";
+            this.promptSymbol.textContent = ">";
+            this.promptSymbol.style.color = "#00ff00";
+          }
+        }
+
+        handleDragOver(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          // Allow drag-over if campaign not yet loaded
+          if (!this.campaignLoaded) {
+            this.terminal.classList.add("drag-over");
+          }
+        }
+
+        handleDragLeave(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          this.terminal.classList.remove("drag-over");
+        }
+
+        handleDrop(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          this.terminal.classList.remove("drag-over");
+
+          // Only accept drops if campaign not yet loaded
+          if (this.campaignLoaded) {
+            this.writeLine("Campaign already loaded. Type 'reset' to load a different campaign.", "error");
+            return;
+          }
+
+          const files = e.dataTransfer.files;
+          if (files.length > 0) {
+            const file = files[0];
+            if (file.name.endsWith(".json")) {
+              this.readAndLoadJSON(file);
+            } else {
+              this.writeLine("Error: Please drop a .json file", "error");
+              this.writeLine("");
+            }
+          }
+        }
+
+        readAndLoadJSON(file) {
+          const reader = new FileReader();
+          reader.onload = e => {
+            try {
+              const data = JSON.parse(e.target.result);
+              // Validate using Zod
+              const result = this.campaignSchema.safeParse(data);
+              if (!result.success) {
+                this.writeLine(`Validation failed for ${file.name}:`, "error");
+
+                result.error.issues.forEach(issue => {
+                  const path = issue.path && issue.path.length ? issue.path.join(".") : "(root)";
+                  this.writeLine(`${path}: ${issue.message}`, "error");
+                });
+                this.writeLine("");
+                return;
+              }
+
+              this.writeLine(`Loaded: ${file.name}`, "success");
+              this.processLoadPath(result.data);
+              this.writeLine("");
+            } catch (error) {
+              this.writeLine(`Error parsing JSON: ${error.message}`, "error");
+              this.writeLine("");
+            }
+          };
+          reader.readAsText(file);
+        }
+
+        processLoadPath(campaign) {
+          // Accept either an object wrapped as { campaign: {...} } or the campaign object itself
+          const campaignObj = campaign.campaign ?? campaign;
+
+          if (typeof campaignObj === "string") {
+            this.writeLine(`Loading campaign from: ${campaignObj}`, "info");
+          }
+
+          try {
+            let result = FourDeckDungeonEngine.loadCampaign(campaignObj);
+            if (result == ENGINE_STATE.playergen) {
+              this.campaignLoaded = true; // Prevent further drag-and-drop loads
+              this.writeLine("Campaign loaded into playergen", "success");
+              // Prompt user to start party generation
+              this.writeLine('Type "generate" or "gen" to create a party member, or "cancel" to skip', "info");
+              this.showPartyDetails();
+            } else {
+              this.writeLine("Issue loading campaign", "error");
+            }
+          } catch (err) {
+            this.writeLine(`Engine load error: ${err && err.message ? err.message : err}`, "error");
+          }
+        }
+
+        processPlayerNameInput(playerName) {
+          if (!playerName || playerName.trim().length === 0) {
+            this.writeLine("Error: Player name cannot be empty", "error");
+            this.writeLine("");
+            return;
+          }
+
+          try {
+            let newPartyMemberResult = FourDeckDungeonEngine.generatePlayer(playerName);
+            if (!newPartyMemberResult.ok) {
+              this.writeLine(`Error generating player: ${newPartyMemberResult.error}`, "error");
+              this.writeLine("");
+              return;
+            }
+
+            let newPartyMember = newPartyMemberResult.value;
+            // Display details and prompt user to regenerate another party member
+            this.writeLine(`Party member "${playerName}" created!`, "success");
+            this.writeLine("Cards drawn for backstory: ", "info");
+            this.writeLine(
+              `Backstory Card: ${newPartyMember.playerGenCards[0].rank} ${newPartyMember.playerGenCards[0].suit}`,
+              "success"
+            );
+            this.writeLine(
+              `Motivation/Drive Card: ${newPartyMember.playerGenCards[1].rank} ${newPartyMember.playerGenCards[1].suit}`,
+              "success"
+            );
+            this.writeLine(`Class Card: ${newPartyMember.playerGenCards[2].rank} ${newPartyMember.playerGenCards[2].suit}`, "success");
+            this.writeLine(`Race Card: ${newPartyMember.playerGenCards[3].rank} ${newPartyMember.playerGenCards[3].suit}`, "success");
+            this.writeLine("-------------------------------------------", "info");
+
+            this.writeLine(`Name: ${newPartyMember.name}`, "info");
+            this.writeLine(`Race: ${newPartyMember.race.name}`, "info");
+            this.writeLine(`Class: ${newPartyMember.class.name}`, "info");
+            this.writeLine(`Backstory: ${newPartyMember.backstory.name}`, "info");
+            this.writeLine(`Motivation: ${newPartyMember.motivation.name}`, "info");
+            this.writeLine(`Drive: ${newPartyMember.drive.name}`, "info");
+            this.writeLine(`Perks: ${newPartyMember.perks.join(", ")}`, "info");
+            this.writeLine(`Strength: ${newPartyMember.strength}`, "info");
+            this.writeLine(`Agility: ${newPartyMember.agility}`, "info");
+            this.writeLine(`Constitution: ${newPartyMember.constitution}`, "info");
+            this.writeLine(`Intelligence: ${newPartyMember.intelligence}`, "info");
+            this.writeLine(`Perception: ${newPartyMember.perception}`, "info");
+            this.writeLine("-------------------------------------------", "info");
+            this.writeLine("Options:", "info");
+            this.writeLine("  [add]     - Accept and add to party", "success");
+            this.writeLine("  [gen]     - Generate another party member", "success");
+            this.writeLine("  [cancel]  - Skip and return to main menu", "error");
+            this.writeLine("");
+            tempCreatedPlayer = newPartyMember;
+          } catch (err) {
+            this.writeLine(`Error generating player: ${err && err.message ? err.message : err}`, "error");
+            this.writeLine("");
+          }
+
+          // Clear input field and reset UI back to normal
+          this.input.value = "";
+          this.updateCursor();
+          this.awaitingInput = null;
+          this.updateUIState();
+        }
+
+        processRemoveIndexInput(indexStr) {
+          const idx = parseInt(indexStr, 10);
+          if (Number.isNaN(idx)) {
+            this.writeLine("Error: please enter a valid numeric index", "error");
+            this.writeLine("");
+            return;
+          }
+
+          const party = FourDeckDungeonEngine.getCurrentParty();
+          if (idx < 0 || idx >= party.length) {
+            this.writeLine(`Error: index out of range (0..${party.length - 1})`, "error");
+            this.writeLine("");
+            return;
+          }
+
+          const name = party[idx].name;
+          const rslt = FourDeckDungeonEngine.removePlayer(name);
+          if (!rslt.ok) {
+            this.writeLine(`Error removing player: ${rslt.error}`, "error");
+            this.writeLine("");
+            return;
+          }
+          this.clear();
+          this.writeLine(`Removed player ${name} (index ${idx})`, "success");
+          this.showPartyDetails();
+          this.writeLine("");
         }
 
         processCommand(cmd) {
@@ -179,10 +463,18 @@
           switch (lower) {
             case "help":
               this.writeLine("Available commands:", "info");
-              this.writeLine("  help     - Show this help message");
-              this.writeLine("  clear    - Clear the screen");
-              this.writeLine("  start    - Start the game");
-              this.writeLine("  look     - Look around");
+              this.writeLine("Campaign Loading:", "success");
+              this.writeLine("  load     - Load a campaign from a JSON file (or drag & drop)", "info");
+              this.writeLine("Party Generation:", "success");
+              this.writeLine("  gen      - Generate a new party member", "info");
+              this.writeLine("  add      - Accept generated player and add to party", "info");
+              this.writeLine("  remove   - Remove a player from the party", "info");
+              this.writeLine("Game Control:", "success");
+              this.writeLine("  start    - Start the campaign", "info");
+              this.writeLine("  reset    - Reset campaign and party", "info");
+              this.writeLine("Other:", "success");
+              this.writeLine("  clear    - Clear the screen", "info");
+              this.writeLine("  help     - Show this help message", "info");
               this.writeLine("");
               break;
 
@@ -190,15 +482,99 @@
               this.clear();
               break;
 
-            case "start":
-              this.writeLine("Game started!", "success");
-              this.writeLine("You find yourself in a dark room...", "info");
+            case "load":
+              this.writeLine("Loading campaign...", "success");
+              this.writeLine("Enter Path to campaign file (json)", "info");
+              this.awaitingInput = "path";
+              this.updateUIState();
               this.writeLine("");
               break;
 
-            case "look":
-              this.writeLine("You see nothing but darkness.", "info");
+            case "default":
+              this.writeLine("TBD.", "error");
               this.writeLine("");
+              break;
+
+            case "tutorial":
+              this.writeLine("TBD.", "error");
+              this.writeLine("");
+              break;
+
+            case "generate":
+            case "gen":
+              // test engine state
+              let engineState = FourDeckDungeonEngine.getEngineState();
+              if (engineState !== ENGINE_STATE.playergen) {
+                this.writeLine("Error: Engine is not in playergen state", "error");
+                this.writeLine("");
+                return;
+              }
+              this.clear();
+              // first display current party and size
+              let party = FourDeckDungeonEngine.getCurrentParty();
+              let partySize = FourDeckDungeonEngine.getNumPlayers();
+              //shuffle party deck
+              FourDeckDungeonEngine.shuffleDeck(FourDeckDungeonEngine.getPlayerGenDeck());
+              this.showPartyDetails();
+              this.writeLine("Enter player name:", "info");
+              this.awaitingInput = "playerName";
+              this.updateUIState();
+              break;
+
+            case "remove":
+              // check if in playergen state
+              let estate = FourDeckDungeonEngine.getEngineState();
+              console.log(estate);
+
+              if (estate !== ENGINE_STATE.playergen) {
+                this.writeLine("Error: Engine is not in playergen state", "error");
+                this.writeLine("");
+                return;
+              }
+              let currentParty = FourDeckDungeonEngine.getCurrentParty();
+              this.clear();
+              this.showPartyDetails();
+              this.writeLine("Enter player index to remove:", "info");
+              currentParty.forEach((player, index) => {
+                this.writeLine(`${index}: Name: ${player.name}`, "info");
+              });
+              this.awaitingInput = "removeIndex";
+              this.updateUIState();
+              break;
+
+            case "cancel":
+            case "skip":
+              this.writeLine("Party generation skipped.", "info");
+              this.writeLine("");
+              break;
+
+            case "add":
+              if (!tempCreatedPlayer) {
+                this.writeLine("Error: No player to add. Generate a player first with 'gen'.", "error");
+                this.writeLine("");
+                return;
+              }
+
+              try {
+                let rslt = FourDeckDungeonEngine.addPlayer(tempCreatedPlayer);
+                if (!rslt.ok) {
+                  this.writeLine(`Error adding player: ${rslt.error}`, "error");
+                  this.writeLine("");
+                  return;
+                }
+                this.clear();
+                this.writeLine(`Player "${tempCreatedPlayer.name}" added to party!`, "success");
+                this.showPartyDetails();
+                this.writeLine("Options:", "info");
+                this.writeLine("  [gen]      - Generate another party member", "success");
+                this.writeLine("  [start]    - Start the campaign", "success");
+                this.writeLine("  [reset]    - Reset campaign and party", "error");
+                this.writeLine("");
+                tempCreatedPlayer = null;
+              } catch (err) {
+                this.writeLine(`Error adding player: ${err && err.message ? err.message : err}`, "error");
+                this.writeLine("");
+              }
               break;
 
             default:
@@ -237,6 +613,19 @@
 
         scrollToBottom() {
           this.output.scrollTop = this.output.scrollHeight;
+        }
+
+        showPartyDetails() {
+          // first display current party and size
+          let party = FourDeckDungeonEngine.getCurrentParty();
+          let partySize = FourDeckDungeonEngine.getNumPlayers();
+          this.writeLine(`-------------------------------------------`, "info");
+          this.writeLine(`Current party size: ${partySize}`, "info");
+
+          party.forEach(player => {
+            this.writeLine(`Name: ${player.name}, class: ${player.class.name}, race: ${player.race.name}`, "info");
+          });
+          this.writeLine(`-------------------------------------------`, "info");
         }
       }
 
