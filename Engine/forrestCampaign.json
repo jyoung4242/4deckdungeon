@@ -67,6 +67,42 @@
         "strong",
         "combat_trained"
       ]
+    },
+    {
+      "id": "monk",
+      "name": "Monk",
+      "description": "Uses chi and focuses on unarmed combat and stealth.",
+      "perkPool": [
+        "unarmed",
+        "chi"
+      ]
+    },
+    {
+      "id": "thief",
+      "name": "Thief",
+      "description": "Stealth based rogue that can steal",
+      "perkPool": [
+        "backstab",
+        "pickpocket"
+      ]
+    },
+    {
+      "id": "blackmage",
+      "name": "BlackMage",
+      "description": "Focuses on offensive magic and spellcasting",
+      "perkPool": [
+        "blackmagic",
+        "arcane_wisdom"
+      ]
+    },
+    {
+      "id": "whitemage",
+      "name": "whiteMage",
+      "description": "Focuses on defensive magic and spellcasting",
+      "perkPool": [
+        "whitemagic",
+        "arcane_wisdom"
+      ]
     }
   ],
   "races": [

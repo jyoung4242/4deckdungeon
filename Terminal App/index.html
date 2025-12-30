@@ -231,6 +231,10 @@
                 this.processRemoveIndexInput(cmd);
                 this.awaitingInput = null;
                 this.updateUIState();
+              } else if (this.awaitingInput === "viewIndex") {
+                this.processViewIndexInput(cmd);
+                this.awaitingInput = null;
+                this.updateUIState();
               } else {
                 this.processCommand(cmd);
               }
@@ -414,12 +418,7 @@
             this.writeLine(`Constitution: ${newPartyMember.constitution}`, "info");
             this.writeLine(`Intelligence: ${newPartyMember.intelligence}`, "info");
             this.writeLine(`Perception: ${newPartyMember.perception}`, "info");
-            this.writeLine("-------------------------------------------", "info");
-            this.writeLine("Options:", "info");
-            this.writeLine("  [add]     - Accept and add to party", "success");
-            this.writeLine("  [gen]     - Generate another party member", "success");
-            this.writeLine("  [cancel]  - Skip and return to main menu", "error");
-            this.writeLine("");
+            this.showOptions();
             tempCreatedPlayer = newPartyMember;
           } catch (err) {
             this.writeLine(`Error generating player: ${err && err.message ? err.message : err}`, "error");
@@ -461,6 +460,40 @@
           this.writeLine("");
         }
 
+        processViewIndexInput(indexStr) {
+          const idx = parseInt(indexStr, 10);
+          if (Number.isNaN(idx)) {
+            this.writeLine("Error: please enter a valid numeric index", "error");
+            this.writeLine("");
+            return;
+          }
+
+          const party = FourDeckDungeonEngine.getCurrentParty();
+          if (idx < 0 || idx >= party.length) {
+            this.writeLine(`Error: index out of range (0..${party.length - 1})`, "error");
+            this.writeLine("");
+            return;
+          }
+
+          const player = party[idx];
+          this.clear();
+          this.writeLine(`=== ${player.name} ===`, "highlight");
+          this.writeLine("");
+          this.writeLine(`Affinity: ${player.affinity}`, "info");
+          this.writeLine(`Class: ${player.class.name}`, "info");
+          this.writeLine(`Race: ${player.race.name}`, "info");
+          //perks
+          this.writeLine(`Perks: ${player.perks.join(", ")}`, "info");
+          this.writeLine("");
+          this.writeLine("Attributes:", "success");
+          this.writeLine(`  Strength:     ${player.strength}`, "highlight");
+          this.writeLine(`  Agility:      ${player.agility}`, "highlight");
+          this.writeLine(`  Constitution: ${player.constitution}`, "highlight");
+          this.writeLine(`  Intelligence: ${player.intelligence}`, "highlight");
+          this.writeLine(`  Perception:   ${player.perception}`, "highlight");
+          this.showOptions();
+        }
+
         processCommand(cmd) {
           const lower = cmd.toLowerCase();
 
@@ -474,6 +507,7 @@
               this.writeLine("  gen      - Generate a new party member", "info");
               this.writeLine("  add      - Accept generated player and add to party", "info");
               this.writeLine("  remove   - Remove a player from the party", "info");
+              this.writeLine("  view     - View details of a party member", "info");
               this.writeLine("Game Control:", "success");
               this.writeLine("  start    - Start the campaign", "info");
               this.writeLine("  reset    - Reset campaign and party", "info");
@@ -544,6 +578,22 @@
               this.updateUIState();
               break;
 
+            case "view":
+              let party = FourDeckDungeonEngine.getCurrentParty();
+              if (party.length === 0) {
+                this.writeLine("Error: No party members to view", "error");
+                this.writeLine("");
+                return;
+              }
+              this.clear();
+              this.writeLine("Select player index to view:", "info");
+              party.forEach((player, index) => {
+                this.writeLine(`${index}: Name: ${player.name}`, "info");
+              });
+              this.awaitingInput = "viewIndex";
+              this.updateUIState();
+              break;
+
             case "start":
               this.writeLine("Starting  campaign TBD.", "error");
               this.writeLine("");
@@ -572,12 +622,7 @@
                 this.clear();
                 this.writeLine(`Player "${tempCreatedPlayer.name}" added to party!`, "success");
                 this.showPartyDetails();
-                this.writeLine("Options:", "info");
-                this.writeLine("  [gen]      - Generate another party member", "success");
-                this.writeLine("  [remove]   - Remove a player from the party", "success");
-                this.writeLine("  [start]    - Start the campaign", "success");
-                this.writeLine("  [reset]    - Reset campaign and party", "error");
-                this.writeLine("");
+                this.showOptions();
                 tempCreatedPlayer = null;
               } catch (err) {
                 this.writeLine(`Error adding player: ${err && err.message ? err.message : err}`, "error");
@@ -636,20 +681,24 @@
               "highlight"
             );
           });
+        }
+
+        showOptions() {
           this.writeLine(`-------------------------------------------`, "info");
+          this.writeLine("Options:", "info");
+          this.writeLine("  [gen]      - Generate another party member", "success");
+          this.writeLine("  [add]      - Accept generated player and add to party", "success");
+          this.writeLine("  [view]     - View a player in the party", "success");
+          this.writeLine("  [remove]   - Remove a player from the party", "success");
+          this.writeLine("  [start]    - Start the campaign", "success");
+          this.writeLine("  [reset]    - Reset campaign and party", "error");
+          this.writeLine("");
         }
       }
-
       // Initialize terminal
       const terminal = new Terminal();
-
       // Expose terminal globally for game control
       window.terminal = terminal;
-
-      // Example: How to control the terminal from your game logic
-      //terminal.writeLine("Your custom text here", "info");
-      //   terminal.writeLine("Success message", "success");
-      //   terminal.writeLine("Error message", "error");
     </script>
   </body>
 </html>
