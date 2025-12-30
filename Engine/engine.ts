@@ -103,6 +103,18 @@ export class FourDeckDungeonEngine {
     return deck;
   }
 
+  static shufflePlayerGenDeck(): void {
+    FourDeckDungeonEngine._PlayerGenDeck = FourDeckDungeonEngine.shuffleDeck(FourDeckDungeonEngine._PlayerGenDeck);
+  }
+
+  static shuffleContestDeck(): void {
+    FourDeckDungeonEngine._ContestDeck = FourDeckDungeonEngine.shuffleDeck(FourDeckDungeonEngine._ContestDeck);
+  }
+
+  static shuffleEncounterDeck(): void {
+    FourDeckDungeonEngine._EncounterDeck = FourDeckDungeonEngine.shuffleDeck(FourDeckDungeonEngine._EncounterDeck);
+  }
+
   private static resetAndShuffleDeck(deck: Card[]): void {
     deck.length = 0;
     let d1, d2;
@@ -214,7 +226,6 @@ export class FourDeckDungeonEngine {
     newPlayer.playerGenCards = [backstoryCard, motivationCard, classCard, raceCard];
 
     FourDeckDungeonEngine._setPlayerAffinity(newPlayer, backstoryCard);
-
     let result = FourDeckDungeonEngine._setPlayerBackstory(newPlayer, backstoryCard, perkPool);
     if (!result.ok) return Err(result.error);
 
@@ -231,32 +242,41 @@ export class FourDeckDungeonEngine {
     let strengthCard = FourDeckDungeonEngine._PlayerGenDeck[FourDeckDungeonEngine._PlayerGenDeck.length - 5];
     if (!strengthCard)
       return Err("Not enough cards in playergen deck, can't generate player, check player count or campaign data and try again");
-    result = FourDeckDungeonEngine._setPlayerAttribute(newPlayer, "strength", strengthCard, perkPool);
+    result = FourDeckDungeonEngine._setPlayerAttribute(newPlayer, "strength", strengthCard);
 
     // Player Agility
     let agilityCard = FourDeckDungeonEngine._PlayerGenDeck[FourDeckDungeonEngine._PlayerGenDeck.length - 6];
     if (!agilityCard)
       return Err("Not enough cards in playergen deck, can't generate player, check player count or campaign data and try again");
-    result = FourDeckDungeonEngine._setPlayerAttribute(newPlayer, "agility", agilityCard, perkPool);
+    result = FourDeckDungeonEngine._setPlayerAttribute(newPlayer, "agility", agilityCard);
 
     // Player Constitution
     let constitutionCard = FourDeckDungeonEngine._PlayerGenDeck[FourDeckDungeonEngine._PlayerGenDeck.length - 7];
     if (!constitutionCard)
       return Err("Not enough cards in playergen deck, can't generate player, check player count or campaign data and try again");
-    result = FourDeckDungeonEngine._setPlayerAttribute(newPlayer, "constitution", constitutionCard, perkPool);
+    result = FourDeckDungeonEngine._setPlayerAttribute(newPlayer, "constitution", constitutionCard);
 
     // Player Intelligence
     let intelligenceCard = FourDeckDungeonEngine._PlayerGenDeck[FourDeckDungeonEngine._PlayerGenDeck.length - 8];
     if (!intelligenceCard)
       return Err("Not enough cards in playergen deck, can't generate player, check player count or campaign data and try again");
-    result = FourDeckDungeonEngine._setPlayerAttribute(newPlayer, "intelligence", intelligenceCard, perkPool);
+    result = FourDeckDungeonEngine._setPlayerAttribute(newPlayer, "intelligence", intelligenceCard);
 
     // Player Perception
     let perceptionCard = FourDeckDungeonEngine._PlayerGenDeck[FourDeckDungeonEngine._PlayerGenDeck.length - 9];
     if (!perceptionCard)
       return Err("Not enough cards in playergen deck, can't generate player, check player count or campaign data and try again");
-    result = FourDeckDungeonEngine._setPlayerAttribute(newPlayer, "perception", perceptionCard, perkPool);
+    result = FourDeckDungeonEngine._setPlayerAttribute(newPlayer, "perception", perceptionCard);
+    // draw last 3 cards
+    let perk1card = FourDeckDungeonEngine._PlayerGenDeck[FourDeckDungeonEngine._PlayerGenDeck.length - 10];
+    let perk2card = FourDeckDungeonEngine._PlayerGenDeck[FourDeckDungeonEngine._PlayerGenDeck.length - 11];
+    let perk3card = FourDeckDungeonEngine._PlayerGenDeck[FourDeckDungeonEngine._PlayerGenDeck.length - 12];
 
+    if (!perk1card || !perk2card || !perk3card)
+      return Err("Not enough cards in playergen deck, can't generate player, check player count or campaign data and try again");
+
+    // use the rank of each card to draw out of Perk Pool
+    FourDeckDungeonEngine._setPlayerPerk(newPlayer, [perk1card, perk2card, perk3card], perkPool);
     return Ok(newPlayer);
   }
 
@@ -277,12 +297,15 @@ export class FourDeckDungeonEngine {
     let numBackstories = FourDeckDungeonEngine._campaignData.backstories.length;
     let result = cardRankToIndex(card.rank);
     if (!result.ok) return Err(`Error in backstory card conversion: ${result.error}`);
-    let selectedIndexResult = remapIndex(result.value, numBackstories, 13);
+    let selectedIndexResult = remapIndex(result.value, 13, numBackstories);
     if (!selectedIndexResult.ok) return Err(`Error in backstory card conversion: ${selectedIndexResult.error}`);
     let selectedBackstoryIndex = selectedIndexResult.value;
     newPlayer.backstory = FourDeckDungeonEngine._campaignData.backstories[selectedBackstoryIndex];
+    //perks from backstory
+    let perks = FourDeckDungeonEngine._campaignData.backstories[selectedBackstoryIndex].perkPool;
+    perkPool.push(...perks);
+
     return Ok(undefined);
-    //TODO setup Perk pool
   }
   private static _setPlayerMotivationDrive(newPlayer: PartyData, card: Card, perkPool: string[]): Result<void, string> {
     let getNumMotivaitons = FourDeckDungeonEngine._campaignData.motivations.length;
@@ -292,55 +315,86 @@ export class FourDeckDungeonEngine {
     let resultSuit = cardRankToIndex(card.suit);
 
     if (!resultRank.ok) return Err(`Error in Motivation card conversion: ${resultRank.error}`);
-    let resultRemapRank = remapIndex(resultRank.value, getNumMotivaitons, 13);
+    let resultRemapRank = remapIndex(resultRank.value, 13, getNumMotivaitons);
     if (!resultRemapRank.ok) return Err(`Error in Motivation card remapping: ${resultRemapRank.error}`);
     let selectedMotivationIndex = resultRemapRank.value;
     newPlayer.motivation = FourDeckDungeonEngine._campaignData.motivations[selectedMotivationIndex];
 
     if (!resultSuit.ok) return Err(`Error in Drive card conversion: ${resultSuit.error}`);
-    let resultRemapSuit = remapIndex(resultSuit.value, getNumDrives, 4);
+    let resultRemapSuit = remapIndex(resultSuit.value, 4, getNumDrives);
     if (!resultRemapSuit.ok) return Err(`Error in Drive card remapping: ${resultRemapSuit.error}`);
     let selectedDriveIndex = resultRemapSuit.value;
     newPlayer.drive = FourDeckDungeonEngine._campaignData.drive[selectedDriveIndex];
-    //TODO setup Perk pool
+
+    let perks = FourDeckDungeonEngine._campaignData.motivations[selectedMotivationIndex].perkPool;
+    perkPool.push(...perks);
+    perks = FourDeckDungeonEngine._campaignData.drive[selectedDriveIndex].perkPool;
+    perkPool.push(...perks);
+
     return Ok(undefined);
   }
   private static _setPlayerClass(newPlayer: PartyData, card: Card, perkPool: string[]): Result<void, string> {
     let numClasses = FourDeckDungeonEngine._campaignData.classes.length;
     let result = cardRankToIndex(card.rank);
     if (!result.ok) return Err(`Error in class card conversion: ${result.error}`);
-    let selectedIndexResult = remapIndex(result.value, numClasses, 13);
+    let selectedIndexResult = remapIndex(result.value, 13, numClasses);
     if (!selectedIndexResult.ok) return Err(`Error in class card remapping: ${selectedIndexResult.error}`);
     let selectedClassIndex = selectedIndexResult.value;
     newPlayer.class = FourDeckDungeonEngine._campaignData.classes[selectedClassIndex];
-    //TODO setup Perk pool
+    let perks = FourDeckDungeonEngine._campaignData.classes[selectedClassIndex].perkPool;
+    perkPool.push(...perks);
     return Ok(undefined);
   }
-
   private static _setPlayerRace(newPlayer: PartyData, card: Card, perkPool: string[]): Result<void, string> {
     let numClasses = FourDeckDungeonEngine._campaignData.races.length;
     let result = cardRankToIndex(card.rank);
     if (!result.ok) return Err(`Error in race card conversion: ${result.error}`);
-    let selectedIndexResult = remapIndex(result.value, numClasses, 13);
+    let selectedIndexResult = remapIndex(result.value, 13, numClasses);
     if (!selectedIndexResult.ok) return Err(`Error in race card remapping: ${selectedIndexResult.error}`);
     let selectedRaceIndex = selectedIndexResult.value;
     newPlayer.race = FourDeckDungeonEngine._campaignData.races[selectedRaceIndex];
-    //TODO setup Perk pool
+    let perks = FourDeckDungeonEngine._campaignData.races[selectedRaceIndex].perkPool;
+    perkPool.push(...perks);
     return Ok(undefined);
   }
-
-  private static _setPlayerAttribute(
-    newPlayer: PartyData,
-    attribute: PlayerAttribute,
-    card: Card,
-    perkPool: string[]
-  ): Result<void, string> {
+  private static _setPlayerAttribute(newPlayer: PartyData, attribute: PlayerAttribute, card: Card): Result<void, string> {
     let result = cardRankToIndex(card.rank);
     if (!result.ok) return Err(`Error in attribute card conversion: ${result.error}`);
     let selectedIndexResult = remapIndex(result.value, 13, 13);
     if (!selectedIndexResult.ok) return Err(`Error in attribute card remapping: ${selectedIndexResult.error}`);
-    let attributeValue = selectedIndexResult.value;
+    let attributeValue = selectedIndexResult.value + 1;
     newPlayer[attribute] = attributeValue;
+    return Ok(undefined);
+  }
+  private static _setPlayerPerk(newPlayer: PartyData, cards: Card[], perkPool: string[]): Result<void, string> {
+    let numPerks = perkPool.length;
+    if (cards.length != 3) return Err(`Error in perk card conversion: ${cards.length} cards in perk pool, 3 expected`);
+    if (perkPool.length < 3) return Err(`Error in perk card conversion: ${perkPool.length} perks in perk pool, 3 expected`);
+
+    let result = cardRankToIndex(cards[0].rank);
+
+    if (!result.ok) return Err(`Error in perk card conversion: ${result.error}`);
+    let selectedIndexResult = remapIndex(result.value, 13, numPerks);
+
+    if (!selectedIndexResult.ok) return Err(`Error in perk card remapping: ${selectedIndexResult.error}`);
+    let selectedPerkIndex = selectedIndexResult.value;
+
+    newPlayer.perks.push(perkPool[selectedPerkIndex]);
+
+    result = cardRankToIndex(cards[1].rank);
+    if (!result.ok) return Err(`Error in perk card conversion: ${result.error}`);
+    selectedIndexResult = remapIndex(result.value, 13, numPerks);
+    if (!selectedIndexResult.ok) return Err(`Error in perk card remapping: ${selectedIndexResult.error}`);
+    selectedPerkIndex = selectedIndexResult.value;
+
+    newPlayer.perks.push(perkPool[selectedPerkIndex]);
+
+    result = cardRankToIndex(cards[2].rank);
+    if (!result.ok) return Err(`Error in perk card conversion: ${result.error}`);
+    selectedIndexResult = remapIndex(result.value, 13, numPerks);
+    if (!selectedIndexResult.ok) return Err(`Error in perk card remapping: ${selectedIndexResult.error}`);
+    selectedPerkIndex = selectedIndexResult.value;
+    newPlayer.perks.push(perkPool[selectedPerkIndex]);
     return Ok(undefined);
   }
 

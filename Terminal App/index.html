@@ -60,6 +60,10 @@
         color: #ffff00;
       }
 
+      .highlight {
+        color: #00d4ff;
+      }
+
       #input-line {
         display: flex;
         align-items: center;
@@ -146,7 +150,7 @@
     </div>
 
     <script type="module">
-      const VERSION = "0.0.9";
+      const VERSION = "0.0.10";
       import { z } from "https://esm.sh/zod@4";
       import { FourDeckDungeonEngine, ENGINE_STATE } from "../Engine/dist/engine.js";
       let tempCreatedPlayer = null;
@@ -398,6 +402,7 @@
             this.writeLine("-------------------------------------------", "info");
 
             this.writeLine(`Name: ${newPartyMember.name}`, "info");
+            this.writeLine(`Affinity: ${newPartyMember.affinity}`, "info");
             this.writeLine(`Race: ${newPartyMember.race.name}`, "info");
             this.writeLine(`Class: ${newPartyMember.class.name}`, "info");
             this.writeLine(`Backstory: ${newPartyMember.backstory.name}`, "info");
@@ -510,11 +515,8 @@
                 return;
               }
               this.clear();
-              // first display current party and size
-              let party = FourDeckDungeonEngine.getCurrentParty();
-              let partySize = FourDeckDungeonEngine.getNumPlayers();
               //shuffle party deck
-              FourDeckDungeonEngine.shuffleDeck(FourDeckDungeonEngine.getPlayerGenDeck());
+              FourDeckDungeonEngine.shufflePlayerGenDeck();
               this.showPartyDetails();
               this.writeLine("Enter player name:", "info");
               this.awaitingInput = "playerName";
@@ -542,6 +544,11 @@
               this.updateUIState();
               break;
 
+            case "start":
+              this.writeLine("Starting  campaign TBD.", "error");
+              this.writeLine("");
+              break;
+
             case "cancel":
             case "skip":
               this.writeLine("Party generation skipped.", "info");
@@ -567,6 +574,7 @@
                 this.showPartyDetails();
                 this.writeLine("Options:", "info");
                 this.writeLine("  [gen]      - Generate another party member", "success");
+                this.writeLine("  [remove]   - Remove a player from the party", "success");
                 this.writeLine("  [start]    - Start the campaign", "success");
                 this.writeLine("  [reset]    - Reset campaign and party", "error");
                 this.writeLine("");
@@ -621,9 +629,12 @@
           let partySize = FourDeckDungeonEngine.getNumPlayers();
           this.writeLine(`-------------------------------------------`, "info");
           this.writeLine(`Current party size: ${partySize}`, "info");
-
+          this.writeLine(`Current party:`, "info");
           party.forEach(player => {
-            this.writeLine(`Name: ${player.name}, class: ${player.class.name}, race: ${player.race.name}`, "info");
+            this.writeLine(
+              `Name: ${player.name}, affinity: ${player.affinity}, class: ${player.class.name}, race: ${player.race.name}, Str: ${player.strength}, Agi: ${player.agility}, Con: ${player.constitution}, Int: ${player.intelligence}, Per: ${player.perception}`,
+              "highlight"
+            );
           });
           this.writeLine(`-------------------------------------------`, "info");
         }
